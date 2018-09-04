@@ -66,7 +66,10 @@ class GiteaHandler(BaseHookHandler):
         change = {
             'author': '{} <{}>'.format(pull_request['user']['full_name'],
                                        pull_request['user']['email']),
-            'comments': pull_request['body'],
+            'comments': 'PR#{}: {}\n\n{}'.format(
+                pull_request['number'],
+                pull_request['title'],
+                pull_request['body']),
             'revision': pull_request['merge_base'],
             'when_timestamp': timestamp,
             'branch': head['ref'],
