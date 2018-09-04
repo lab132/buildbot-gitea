@@ -31,8 +31,8 @@ class GiteaHandler(BaseHookHandler):
         for commit in payload['commits']:
             timestamp = dateparse(commit['timestamp'])
             change = {
-                'author': '{} <{}>'.format((commit['author']['name'],
-                                            commit['author']['email'])),
+                'author': '{} <{}>'.format(commit['author']['name'],
+                                           commit['author']['email']),
                 'comments': commit['message'],
                 'revision': commit['id'],
                 'when_timestamp': timestamp,
@@ -64,8 +64,8 @@ class GiteaHandler(BaseHookHandler):
         head = pull_request['head']
         repository = payload['repository']
         change = {
-            'author': '{} <{}>'.format((pull_request['user']['full_name'],
-                                        pull_request['user']['email'])),
+            'author': '{} <{}>'.format(pull_request['user']['full_name'],
+                                       pull_request['user']['email']),
             'comments': pull_request['body'],
             'revision': pull_request['merge_base'],
             'when_timestamp': timestamp,
