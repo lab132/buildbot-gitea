@@ -62,7 +62,7 @@ class GiteaHandler(BaseHookHandler):
         timestamp = dateparse(pull_request['updated_at'])
         base = pull_request['base']
         head = pull_request['head']
-        repository = pull_request['repository']
+        repository = payload['repository']
         change = {
             'author': '{} <{}>'.format((pull_request['user']['full_name'],
                                         pull_request['user']['email'])),
