@@ -4,6 +4,7 @@ from buildbot.util import bytes2unicode
 from buildbot.www.hooks.base import BaseHookHandler
 
 from twisted.python import log
+from dateutil.parser import parse as dateparse
 
 _HEADER_EVENT_TYPE = 'X-Gitea-Event'
 
@@ -28,7 +29,7 @@ class GiteaHandler(BaseHookHandler):
         project = repository["full_name"]
 
         for commit in payload["commits"]:
-            timestamp = commit["timestamp"]
+            timestamp = dateparse(commit["timestamp"])
             change = {
                 'author': '%s <%s>'.format((commit['author']['name'],
                                             commit['author']['email'])),
