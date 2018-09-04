@@ -19,7 +19,7 @@ class GiteaHandler(BaseHookHandler):
         # We only care about regular heads or tags
         match = re.match(r"^refs/(heads|tags)/(.+)$", refname)
         if not match:
-            log.msg("Ignoring refname '{}': Not a branch".format(refname))
+            log.msg("Ignoring refname '{}': Not a branch or tag".format(refname))
             return changes
 
         branch = match.group(2)
@@ -99,7 +99,7 @@ class GiteaHandler(BaseHookHandler):
 
     def getChanges(self, request):
         secret = None
-        if self.options is dict:
+        if isinstance(self.options, dict):
             secret = self.options.get('secret')
 
         try:
