@@ -11,7 +11,7 @@ setup(name='buildbot-gitea',
       packages=['gitea'],
       entry_points={
         "buildbot.webhooks": [
-            "Gitea = gitea.webhook:gitea"
+            "gitea = gitea.webhook:gitea"
         ]
       },
       )
