@@ -5,14 +5,100 @@ from buildbot.test.fake.web import fakeMasterForHooks
 
 import mock
 
+import calendar
+
 from twisted.internet import defer
 from twisted.trial import unittest
 
-from gitea.webhook import _HEADER_EVENT_TYPE
+from buildbot_gitea.webhook import _HEADER_EVENT_TYPE
 
 giteaJsonPushPayload = rb"""
 {
   "secret": "test",
+  "ref": "refs/heads/feature-branch",
+  "before": "0000000000000000000000000000000000000000",
+  "after": "9d7157cc4a137b3e1dfe92750ccfb1bbad239f99",
+  "compare_url": "https://git.example.com/",
+  "commits": [
+    {
+      "id": "9d7157cc4a137b3e1dfe92750ccfb1bbad239f99",
+      "message": "TestBranch\n",
+      "url": "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99",
+      "author": {
+        "name": "Max Mustermann",
+        "email": "max@example.com",
+        "username": "max"
+      },
+      "committer": {
+        "name": "Max Mustermann",
+        "email": "max@example.com",
+        "username": "max"
+      },
+      "verification": null,
+      "timestamp": "2018-09-04T12:10:14Z"
+    }
+  ],
+  "repository": {
+    "id": 20,
+    "owner": {
+      "id": 1,
+      "login": "max",
+      "full_name": "Max Mustermann",
+      "email": "max@example.com",
+      "avatar_url": "https://secure.gravatar.com/avatar/c9a5fca94b7fd6f8d4dbab8d1575e4fc?d=identicon",
+      "language": "en-US",
+      "username": "max"
+    },
+    "name": "webhook_test",
+    "full_name": "max/webhook_test",
+    "description": "",
+    "empty": false,
+    "private": true,
+    "fork": false,
+    "parent": null,
+    "mirror": false,
+    "size": 48,
+    "html_url": "https://git.example.com/max/webhook_test",
+    "ssh_url": "ssh://git@git.example.com/max/webhook_test.git",
+    "clone_url": "https://git.example.com/max/webhook_test.git",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 1,
+    "open_issues_count": 0,
+    "default_branch": "master",
+    "created_at": "2018-09-04T10:45:23Z",
+    "updated_at": "2018-09-04T12:10:14Z",
+    "permissions": {
+      "admin": false,
+      "push": false,
+      "pull": false
+    }
+  },
+  "pusher": {
+    "id": 1,
+    "login": "max",
+    "full_name": "Max Mustermann",
+    "email": "max@example.com",
+    "avatar_url": "https://secure.gravatar.com/avatar/c9a5fca94b7fd6f8d4dbab8d1575e4fc?d=identicon",
+    "language": "en-US",
+    "username": "max"
+  },
+  "sender": {
+    "id": 1,
+    "login": "max",
+    "full_name": "Max Mustermann",
+    "email": "max@example.com",
+    "avatar_url": "https://secure.gravatar.com/avatar/c9a5fca94b7fd6f8d4dbab8d1575e4fc?d=identicon",
+    "language": "en-US",
+    "username": "max"
+  }
+}
+"""
+
+giteaInvalidSecretPush = rb"""
+{
+  "secret": "invalidSecret",
   "ref": "refs/heads/feature-branch",
   "before": "0000000000000000000000000000000000000000",
   "after": "9d7157cc4a137b3e1dfe92750ccfb1bbad239f99",
@@ -286,10 +372,44 @@ class TestChangeHookGiteaPush(unittest.TestCase):
         self.assertEqual(
             change["revision"], '9d7157cc4a137b3e1dfe92750ccfb1bbad239f99')
         self.assertEqual(
+            calendar.timegm(change["when_timestamp"].utctimetuple()),
+            1536063014)
+        self.assertEqual(
             change["comments"], "TestBranch\n")
         self.assertEqual(change["branch"], "feature-branch")
         self.assertEqual(change[
             "revlink"], "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
+
+    def checkChangesFromPullRequest(self, codebase=None):
+        self.assertEqual(len(self.changeHook.master.addedChanges), 1)
+        change = self.changeHook.master.addedChanges[0]
+        self.assertEqual(change['repository'], 'ssh://git@git.example.com/max/webhook_test.git')
+
+        self.assertEqual(
+            change["author"], "Max Mustermann <max@example.com>")
+        self.assertEqual(
+            change["revision"], '9d7157cc4a137b3e1dfe92750ccfb1bbad239f99')
+        self.assertEqual(
+            calendar.timegm(change["when_timestamp"].utctimetuple()),
+            1536063289)
+        self.assertEqual(
+            change["comments"], "PR#1: TestPR\n\n")
+        self.assertEqual(change["branch"], "feature-branch")
+        self.assertEqual(change[
+            "revlink"], "https://git.example.com/max/webhook_test/pulls/1")
+        properties = change["properties"]
+        self.assertEqual(properties["base_branch"], "master")
+        self.assertEqual(properties["base_sha"], "7c5de0796c409e7802abe759113d7fc37e0d6578")
+        self.assertEqual(properties["base_repository"], "https://git.example.com/max/webhook_test.git")
+        self.assertEqual(properties["base_git_ssh_url"], "ssh://git@git.example.com/max/webhook_test.git")
+
+        self.assertEqual(properties["head_branch"], "feature-branch")
+        self.assertEqual(properties["head_sha"], "9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
+        self.assertEqual(properties["head_repository"], "https://git.example.com/max/webhook_test.git")
+        self.assertEqual(properties["head_git_ssh_url"], "ssh://git@git.example.com/max/webhook_test.git")
+
+        self.assertEqual(properties["pr_id"], 8)
+        self.assertEqual(properties["pr_number"], 1)
 
     @defer.inlineCallbacks
     def testPushEvent(self):
@@ -299,3 +419,37 @@ class TestChangeHookGiteaPush(unittest.TestCase):
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
         res = yield self.request.test_render(self.changeHook)
         self.checkChangesFromPush(res)
+
+    @defer.inlineCallbacks
+    def testPullRequestEvent(self):
+        self.request = FakeRequest(content=giteaJsonPullRequestPayload)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"pull_request"
+        res = yield self.request.test_render(self.changeHook)
+        self.checkChangesFromPullRequest(res)
+
+
+class TestChangeHookGiteaSecretPhrase(unittest.TestCase):
+    def setUp(self):
+        self.changeHook = change_hook.ChangeHookResource(
+            dialects={'gitea': {"secret": "test"}},
+            master=fakeMasterForHooks())
+
+    @defer.inlineCallbacks
+    def testValidSecret(self):
+        self.request = FakeRequest(content=giteaJsonPushPayload)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        yield self.request.test_render(self.changeHook)
+        self.assertEqual(len(self.changeHook.master.addedChanges), 1)
+
+    @defer.inlineCallbacks
+    def testInvalidSecret(self):
+        self.request = FakeRequest(content=giteaInvalidSecretPush)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        yield self.request.test_render(self.changeHook)
+        self.assertEqual(len(self.changeHook.master.addedChanges), 0)

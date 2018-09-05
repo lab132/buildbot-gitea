@@ -70,7 +70,7 @@ class GiteaHandler(BaseHookHandler):
                 pull_request['number'],
                 pull_request['title'],
                 pull_request['body']),
-            'revision': pull_request['merge_base'],
+            'revision': head['sha'],
             'when_timestamp': timestamp,
             'branch': head['ref'],
             'revlink': pull_request['html_url'],
