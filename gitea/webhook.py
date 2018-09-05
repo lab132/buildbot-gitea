@@ -101,7 +101,6 @@ class GiteaHandler(BaseHookHandler):
         secret = None
         if isinstance(self.options, dict):
             secret = self.options.get('secret')
-
         try:
             content = request.content.read()
             payload = json.loads(bytes2unicode(content))
@@ -109,7 +108,6 @@ class GiteaHandler(BaseHookHandler):
             raise ValueError('Error loading JSON: ' + str(e))
         if secret is not None and secret != payload['secret']:
             raise ValueError('Invalid secret')
-
         event_type = bytes2unicode(request.getHeader(_HEADER_EVENT_TYPE))
         log.msg("Received event '{}' from gitea".format(event_type))
 

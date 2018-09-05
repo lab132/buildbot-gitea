@@ -1,2 +1,2 @@
-buildbot
-distutils
+setuptools
+buildbot[test]

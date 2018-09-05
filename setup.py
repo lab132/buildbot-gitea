@@ -9,9 +9,12 @@ setup(name='buildbot-gitea',
       author_email='marvin@lab132.com',
       url='https://lab132.com',
       packages=['gitea'],
+      install_requires=[
+          "buildbot"
+      ],
       entry_points={
-        "buildbot.webhooks": [
-            "gitea = gitea.webhook:gitea"
-        ]
+          "buildbot.webhooks": [
+              "gitea = gitea.webhook:gitea"
+          ]
       },
       )
