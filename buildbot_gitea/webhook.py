@@ -43,6 +43,8 @@ class GiteaHandler(BaseHookHandler):
                 'category': event_type,
                 'properties': {
                     'event': event_type,
+                    'repository_name': repository['name'],
+                    'owner': repository["owner"]["username"]
                 },
             }
             if codebase is not None:
@@ -97,6 +99,8 @@ class GiteaHandler(BaseHookHandler):
                 'head_git_ssh_url': head['repo']['ssh_url'],
                 'pr_id': pull_request['id'],
                 'pr_number': pull_request['number'],
+                'repository_name': repository['name'],
+                'owner': repository["owner"]["username"],
             },
         }
         if codebase is not None:
