@@ -15,6 +15,12 @@ setup(name='buildbot-gitea',
       entry_points={
           "buildbot.webhooks": [
               "gitea = buildbot_gitea.webhook:gitea"
+          ],
+          "buildbot.steps": [
+              "gitea = buildbot_gitea.step_source:Gitea"
+          ],
+          "buildbot.reporters": [
+              "GiteaStatusPush = buildbot_gitea.reporter:GiteaStatusPush"
           ]
       },
       )
