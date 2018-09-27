@@ -59,6 +59,12 @@ class GiteaHandler(BaseHookHandler):
             log.msg("Gitea Pull Request event '{}' ignored".format(action))
             return []
         pull_request = payload['pull_request']
+        if not pull_request['mergeable']:
+            log.msg("Gitea Pull Request ignored because it is not mergeable.")
+            return []
+        if pull_request['merged']:
+            log.msg("Gitea Pull Request ignored because it is already merged.")
+            return []
         timestamp = dateparse(pull_request['updated_at'])
         base = pull_request['base']
         head = pull_request['head']
@@ -104,8 +110,8 @@ class GiteaHandler(BaseHookHandler):
         try:
             content = request.content.read()
             payload = json.loads(bytes2unicode(content))
-        except Exception as e:
-            raise ValueError('Error loading JSON: ' + str(e))
+        except Exception as exception:
+            raise ValueError('Error loading JSON: ' + str(exception))
         if secret is not None and secret != payload['secret']:
             raise ValueError('Invalid secret')
         event_type = bytes2unicode(request.getHeader(_HEADER_EVENT_TYPE))
