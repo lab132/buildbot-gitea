@@ -115,6 +115,9 @@ class GiteaStatusPush(http.HttpStatusPushBase):
 
         for sourcestamp in sourcestamps:
             sha = sourcestamp['revision']
+            if sha is None:
+                # No special revision for this, so ignore it
+                continue
             if 'repository_name' in props:
                 repository_name = props['repository_name']
             else:
