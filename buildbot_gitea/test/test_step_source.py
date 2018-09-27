@@ -33,8 +33,8 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
         self.sourceName = self.stepClass.__name__
         return self.setUpSourceStep()
 
-    def setupStep(self, step, args, **kwargs):
-        step = sourcesteps.SourceStepMixin.setupStep(self, step, args, **kwargs)
+    def setupStep(self, step, **kwargs):
+        step = sourcesteps.SourceStepMixin.setupStep(self, step, **kwargs)
         step.build.properties.setProperty("pr_id", "1", "gitea pr id")
         step.build.properties.setProperty("base_sha", "f6ad368298bd941e934a41f3babc827b2aa95a1d", "gitea source branch")
         step.build.properties.setProperty("base_branch", "master", "gitea source branch")
@@ -54,7 +54,7 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
     def test_with_merge_branch(self):
         self.setupStep(
             Gitea(repourl='git@gitea.example.com:base/awesome_project.git',
-                           mode='full', method='clean'), None)
+                           mode='full', method='clean'))
 
         self.expectCommands(
             ExpectShell(workdir='wkdir',
@@ -91,9 +91,14 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
             + 0,
             ExpectShell(workdir='wkdir',
                         command=['git', 'merge', 'e4cd1224c622d46a8199c85c858485723115d2c8'])
-            + 0
+            + 0,
+            ExpectShell(workdir='wkdir',
+                        command=['git', 'rev-parse', 'HEAD'])
+            + ExpectShell.log('stdio',
+                              stdout='e4cd1224c622d46a8199c85c858485723115d2c8')
+            + 0,
         )
         self.expectOutcome(result=SUCCESS)
         self.expectProperty(
-            'got_revision', 'e4cd1224c622d46a8199c85c858485723115d2c8', 'GitLab')
+            'got_revision', 'e4cd1224c622d46a8199c85c858485723115d2c8', 'Gitea')
         return self.runStep()
