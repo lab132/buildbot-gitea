@@ -19,10 +19,13 @@ from buildbot.reporters import http
 from buildbot.util import httpclientservice
 from buildbot.util import unicode2NativeString
 
+import re
+
 
 class GiteaStatusPush(http.HttpStatusPushBase):
     name = "GiteaStatusPush"
     neededDetails = dict(wantProperties=True)
+    ssh_url_match = re.compile(r"(ssh://)?[\w+\-\_]+@[\w+\.\-\_]:?\d*/(?P<owner>[\w_\-\.]+)/(?P<repo_name>[\w_\-\.]+)\.git")
 
     @defer.inlineCallbacks
     def reconfigService(self, baseURL, token,
@@ -115,17 +118,25 @@ class GiteaStatusPush(http.HttpStatusPushBase):
             if 'repository_name' in props:
                 repository_name = props['repository_name']
             else:
-                log.msg(
-                    "Could not send status, "
-                    "build has no repository_name property for Gitea.")
-                continue
+                match = re.match(self.ssh_url_match, sourcestamp['repository'])
+                if match is not None:
+                    repository_name = match.group("repo_name")
+                else:
+                    log.msg(
+                        "Could not send status, "
+                        "build has no repository_name property for Gitea.")
+                    continue
             if 'owner' in props:
                 repository_owner = props['owner']
             else:
-                log.msg(
-                    "Could not send status, "
-                    "build has no owner property for Gitea.")
-                continue
+                match = re.match(self.ssh_url_match, sourcestamp['repository'])
+                if match is not None:
+                    repository_owner = match.group("owner")
+                else:
+                    log.msg(
+                        "Could not send status, "
+                        "build has no owner property for Gitea.")
+                    continue
             try:
                 sha = unicode2NativeString(sha)
                 state = unicode2NativeString(state)

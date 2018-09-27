@@ -103,6 +103,20 @@ class TestGiteaStatusPush(
         self.sp.buildStarted(("build", 20, "started"), build)
 
     @defer.inlineCallbacks
+    def test_sshurl_noprops(self):
+        self.TEST_REPO = u'git@gitea:buildbot/buildbot.git'
+        build = yield self.setupBuildResults(SUCCESS)
+        # we make sure proper calls to txrequests have been made
+        self._http.expect(
+            'post',
+            '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
+            json={'state': 'pending',
+                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
+                  'description': 'Build started.', 'name': 'buildbot/Builder0'})
+        build['complete'] = False
+        self.sp.buildStarted(("build", 20, "started"), build)
+
+    @defer.inlineCallbacks
     def test_noowner(self):
         self.setUpLogging()
         self.setupProps()
