@@ -46,7 +46,7 @@ class GiteaStatusPush(http.HttpStatusPushBase):
         self.baseURL = baseURL
         self._http = yield httpclientservice.HTTPClientService.getService(
             self.master, baseURL,
-            headers={'AuthorizationHeaderToken': 'token {}'.format(token)},
+            headers={'Authorization': 'token {}'.format(token)},
             debug=self.debug, verify=self.verify)
         self.verbose = verbose
         self.project_ids = {}

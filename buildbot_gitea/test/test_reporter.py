@@ -36,7 +36,7 @@ class TestGiteaStatusPush(
         yield self.master.startService()
         self._http = yield fakehttpclientservice.HTTPClientService.getFakeService(
             self.master, self,
-            "http://gitea", headers={'AuthorizationHeaderToken': 'token XXYYZZ'},
+            "http://gitea", headers={'Authorization': 'token XXYYZZ'},
             debug=None, verify=None)
         self.sp = sp = GiteaStatusPush("http://gitea/", Interpolate('XXYYZZ'))
         sp.sessionFactory = Mock(return_value=Mock())
