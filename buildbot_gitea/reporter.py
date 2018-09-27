@@ -76,7 +76,7 @@ class GiteaStatusPush(http.HttpStatusPushBase):
             payload['target_url'] = target_url
 
         if context is not None:
-            payload['name'] = context
+            payload['context'] = context
 
         return self._http.post(
             '/api/v1/repos/{owner}/{repository}/statuses/{sha}'.format(
