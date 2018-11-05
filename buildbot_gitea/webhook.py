@@ -28,7 +28,11 @@ class GiteaHandler(BaseHookHandler):
         repo_url = repository['ssh_url']
         project = repository['full_name']
 
-        for commit in payload['commits']:
+        commits = payload['commits']
+        if self.options.get('onlyIncludePushCommit', False):
+            commits = commits[:1]
+
+        for commit in commits:
             timestamp = dateparse(commit['timestamp'])
             change = {
                 'author': '{} <{}>'.format(commit['author']['name'],
