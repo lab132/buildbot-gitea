@@ -33,6 +33,23 @@ giteaJsonPushPayload = rb"""
       },
       "verification": null,
       "timestamp": "2018-09-04T12:10:14Z"
+    },
+    {
+      "id": "ad7157cc4a137b3e1dfe92750ccfb1bbad239f9a",
+      "message": "TestBranch2\n",
+      "url": "https://git.example.com/max/webhook_test/commit/ad7157cc4a137b3e1dfe92750ccfb1bbad239f9a",
+      "author": {
+        "name": "Max Mustermann",
+        "email": "max@example.com",
+        "username": "max"
+      },
+      "committer": {
+        "name": "Max Mustermann",
+        "email": "max@example.com",
+        "username": "max"
+      },
+      "verification": null,
+      "timestamp": "2018-09-04T12:10:14Z"
     }
   ],
   "repository": {
@@ -706,11 +723,11 @@ giteaJsonPullRequestPayloadMerged = rb"""
 class TestChangeHookGiteaPush(unittest.TestCase):
     def setUp(self):
         self.changeHook = change_hook.ChangeHookResource(
-            dialects={'gitea': True},
+            dialects={'gitea': {}},
             master=fakeMasterForHooks())
 
     def checkChangesFromPush(self, codebase=None):
-        self.assertEqual(len(self.changeHook.master.addedChanges), 1)
+        self.assertEqual(len(self.changeHook.master.addedChanges), 2)
         change = self.changeHook.master.addedChanges[0]
         self.assertEqual(change['repository'], 'ssh://git@git.example.com/max/webhook_test.git')
 
@@ -727,6 +744,22 @@ class TestChangeHookGiteaPush(unittest.TestCase):
         self.assertEqual(change[
             "revlink"],
             "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
+        change = self.changeHook.master.addedChanges[1]
+        self.assertEqual(change['repository'], 'ssh://git@git.example.com/max/webhook_test.git')
+
+        self.assertEqual(
+            change["author"], "Max Mustermann <max@example.com>")
+        self.assertEqual(
+            change["revision"], 'ad7157cc4a137b3e1dfe92750ccfb1bbad239f9a')
+        self.assertEqual(
+            calendar.timegm(change["when_timestamp"].utctimetuple()),
+            1536063014)
+        self.assertEqual(
+            change["comments"], "TestBranch2\n")
+        self.assertEqual(change["branch"], "feature-branch")
+        self.assertEqual(change[
+            "revlink"],
+            "https://git.example.com/max/webhook_test/commit/ad7157cc4a137b3e1dfe92750ccfb1bbad239f9a")
 
     def checkChangesFromPullRequest(self, codebase=None):
         self.assertEqual(len(self.changeHook.master.addedChanges), 1)
@@ -796,6 +829,41 @@ class TestChangeHookGiteaPush(unittest.TestCase):
         self.assertEqual(len(self.changeHook.master.addedChanges), 0)
 
 
+class TestChangeHookGiteaPushOnlySingle(unittest.TestCase):
+    def setUp(self):
+        self.changeHook = change_hook.ChangeHookResource(
+            dialects={'gitea': {"onlyIncludePushCommit": True}},
+            master=fakeMasterForHooks())
+
+    def checkChangesFromPush(self, codebase=None):
+        self.assertEqual(len(self.changeHook.master.addedChanges), 1)
+        change = self.changeHook.master.addedChanges[0]
+        self.assertEqual(change['repository'], 'ssh://git@git.example.com/max/webhook_test.git')
+
+        self.assertEqual(
+            change["author"], "Max Mustermann <max@example.com>")
+        self.assertEqual(
+            change["revision"], '9d7157cc4a137b3e1dfe92750ccfb1bbad239f99')
+        self.assertEqual(
+            calendar.timegm(change["when_timestamp"].utctimetuple()),
+            1536063014)
+        self.assertEqual(
+            change["comments"], "TestBranch\n")
+        self.assertEqual(change["branch"], "feature-branch")
+        self.assertEqual(change[
+            "revlink"],
+            "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
+
+    @defer.inlineCallbacks
+    def testPushEvent(self):
+        self.request = FakeRequest(content=giteaJsonPushPayload)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        res = yield self.request.test_render(self.changeHook)
+        self.checkChangesFromPush(res)
+
+
 class TestChangeHookGiteaSecretPhrase(unittest.TestCase):
     def setUp(self):
         self.changeHook = change_hook.ChangeHookResource(
@@ -809,7 +877,7 @@ class TestChangeHookGiteaSecretPhrase(unittest.TestCase):
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
         yield self.request.test_render(self.changeHook)
-        self.assertEqual(len(self.changeHook.master.addedChanges), 1)
+        self.assertEqual(len(self.changeHook.master.addedChanges), 2)
 
     @defer.inlineCallbacks
     def testInvalidSecret(self):
