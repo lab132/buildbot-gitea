@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='buildbot-gitea',
-      version='0.0.1',
+      version='0.1.0',
       description='buildbot plugin for integration with Gitea.',
       author='Marvin Pohl',
       author_email='marvin@lab132.com',
