@@ -25,7 +25,7 @@ import re
 class GiteaStatusPush(http.HttpStatusPushBase):
     name = "GiteaStatusPush"
     neededDetails = dict(wantProperties=True)
-    ssh_url_match = re.compile(r"(ssh://)?[\w+\-\_]+@[\w+\.\-\_]:?\d*/(?P<owner>[\w_\-\.]+)/(?P<repo_name>[\w_\-\.]+)\.git")
+    ssh_url_match = re.compile(r"(ssh://)?[\w+\-\_]+@[\w\.\-\_]+:?(\d*/)?(?P<owner>[\w_\-\.]+)/(?P<repo_name>[\w_\-\.]+)(\.git)?")
 
     @defer.inlineCallbacks
     def reconfigService(self, baseURL, token,
@@ -157,12 +157,13 @@ class GiteaStatusPush(http.HttpStatusPushBase):
                 )
                 if res.code not in (200, 201, 204):
                     message = yield res.json()
-                    message = message.get('message', 'unspecified error')
+                    message = message[0].get('message', 'unspecified error')
                     log.msg(
                         'Could not send status "{state}" for '
-                        '{repo} at {sha}: {message}'.format(
+                        '{repo} at {sha}: {code} : {message}'.format(
                             state=state,
                             repo=sourcestamp['repository'], sha=sha,
+                            code=res.code,
                             message=message))
                 elif self.verbose:
                     log.msg(
