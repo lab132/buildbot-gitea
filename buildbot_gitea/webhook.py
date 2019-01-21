@@ -29,7 +29,7 @@ class GiteaHandler(BaseHookHandler):
         project = repository['full_name']
 
         commits = payload['commits']
-        if self.options.get('onlyIncludePushCommit', False):
+        if isinstance(self.options, dict) and self.options.get('onlyIncludePushCommit', False):
             commits = commits[:1]
 
         for commit in commits:
