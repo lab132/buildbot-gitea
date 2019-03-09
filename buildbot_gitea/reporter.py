@@ -152,7 +152,7 @@ class GiteaStatusPush(http.HttpStatusPushBase):
                 )
                 if res.code not in (200, 201, 204):
                     message = yield res.json()
-                    message = message[0].get('message', 'unspecified error')
+                    message = message.get('message', 'unspecified error')
                     log.msg(
                         'Could not send status "{state}" for '
                         '{repo} at {sha}: {code} : {message}'.format(

@@ -154,14 +154,17 @@ class TestGiteaStatusPush(
             json={'state': 'pending',
                   'target_url': 'http://localhost:8080/#builders/79/builds/0',
                   'description': 'Build started.', 'context': 'buildbot/Builder0'},
-            content_json={'message': 'sha1 not found for branch master'},
-            code=404)
+            content_json={
+                "message": "sha1 not found: d34db33fd43db33f",
+                "url": "https://godoc.org/github.com/go-gitea/go-sdk/gitea"
+            },
+            code=500)
         build['complete'] = False
         self.sp.buildStarted(("build", 20, "started"), build)
         self.assertLogged(
             "Could not send status \"pending\" for "
             "http://gitea/buildbot/buildbot at d34db33fd43db33f:"
-            " sha1 not found for branch master")
+            " 500 : sha1 not found: d34db33fd43db33f")
 
     @defer.inlineCallbacks
     def test_badchange(self):
