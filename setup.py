@@ -10,7 +10,7 @@ setup(name='buildbot-gitea',
       url='https://lab132.com',
       packages=['buildbot_gitea'],
       install_requires=[
-          "buildbot"
+          "buildbot>=2.0.0"
       ],
       entry_points={
           "buildbot.webhooks": [

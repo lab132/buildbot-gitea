@@ -17,7 +17,6 @@ from buildbot.process.results import SUCCESS
 from buildbot.process.results import WARNINGS
 from buildbot.reporters import http
 from buildbot.util import httpclientservice
-from buildbot.util import unicode2NativeString
 
 import re
 
@@ -141,11 +140,7 @@ class GiteaStatusPush(http.HttpStatusPushBase):
                         "build has no owner property for Gitea.")
                     continue
             try:
-                sha = unicode2NativeString(sha)
-                state = unicode2NativeString(state)
-                target_url = unicode2NativeString(build['url'])
-                context = unicode2NativeString(context)
-                description = unicode2NativeString(description)
+                target_url = build['url']
                 res = yield self.createStatus(
                     project_owner=repository_owner,
                     repo_name=repository_name,
