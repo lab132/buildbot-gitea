@@ -1,0 +1,21 @@
+language: python
+python:
+  - "3.6"
+addons:
+  apt_packages:
+    - enchant
+    - aspell
+    - aspell-en
+    - ispell
+    - iamerican
+env:
+  - BOTO_CONFIG=/dev/null
+install:
+  - pip install -U pip wheel setuptools
+  - "pip install --no-binary :all: -r testrequirements.txt"
+  - pip install -r requirements.txt
+  - pip install -e .
+cache:
+  directories:
+    - $HOME/.cache/pip
+script: "trial buildbot_gitea.test"

@@ -2,15 +2,17 @@
 
 from distutils.core import setup
 
+VERSION = "0.1.0"
+
 setup(name='buildbot-gitea',
-      version='0.1.0',
+      version=VERSION,
       description='buildbot plugin for integration with Gitea.',
       author='Marvin Pohl',
-      author_email='marvin@lab132.com',
-      url='https://lab132.com',
+      author_email='hello@lab132.com',
+      url='https://github.com/lab132/buildbot-gitea',
       packages=['buildbot_gitea'],
-      install_requires=[
-          "buildbot>=2.0.0"
+      requires=[
+          "buildbot (>=2.0.0)"
       ],
       entry_points={
           "buildbot.webhooks": [
