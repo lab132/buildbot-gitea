@@ -24,12 +24,15 @@ from buildbot.test.fake.remotecommand import Expect
 from buildbot.test.fake.remotecommand import ExpectShell
 from buildbot.test.util import config
 from buildbot.test.util import sourcesteps
+from buildbot.test.util.misc import TestReactorMixin
 
 
-class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.TestCase):
+
+class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.TestCase, TestReactorMixin):
     stepClass = Gitea
 
     def setUp(self):
+        self.setUpTestReactor()
         self.sourceName = self.stepClass.__name__
         return self.setUpSourceStep()
 

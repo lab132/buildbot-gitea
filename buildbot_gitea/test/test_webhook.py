@@ -1,6 +1,8 @@
 import buildbot.www.change_hook as change_hook
 from buildbot.test.fake.web import FakeRequest
 from buildbot.test.fake.web import fakeMasterForHooks
+from buildbot.test.util.misc import TestReactorMixin
+
 
 
 from twisted.internet import defer
@@ -719,8 +721,9 @@ giteaJsonPullRequestPayloadMerged = rb"""
 """
 
 
-class TestChangeHookGiteaPush(unittest.TestCase):
+class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
     def setUp(self):
+        self.setUpTestReactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {}},
             master=fakeMasterForHooks(self))
@@ -828,8 +831,9 @@ class TestChangeHookGiteaPush(unittest.TestCase):
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 0)
 
 
-class TestChangeHookGiteaPushOnlySingle(unittest.TestCase):
+class TestChangeHookGiteaPushOnlySingle(unittest.TestCase, TestReactorMixin):
     def setUp(self):
+        self.setUpTestReactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {"onlyIncludePushCommit": True}},
             master=fakeMasterForHooks(self))
@@ -863,8 +867,9 @@ class TestChangeHookGiteaPushOnlySingle(unittest.TestCase):
         self.checkChangesFromPush(res)
 
 
-class TestChangeHookGiteaSecretPhrase(unittest.TestCase):
+class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
     def setUp(self):
+        self.setUpTestReactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {"secret": "test"}},
             master=fakeMasterForHooks(self))

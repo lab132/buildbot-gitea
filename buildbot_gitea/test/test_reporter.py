@@ -17,17 +17,21 @@ from buildbot.test.fake import fakemaster
 from buildbot.test.fake import httpclientservice as fakehttpclientservice
 from buildbot.test.util import logging
 from buildbot.test.util.reporter import ReporterTestMixin
+from buildbot.test.util.misc import TestReactorMixin
+
 
 
 class TestGiteaStatusPush(
     unittest.TestCase,
     ReporterTestMixin,
-    logging.LoggingMixin):
+    logging.LoggingMixin,
+    TestReactorMixin):
     # repository must be in the form http://gitea/<owner>/<project>
     TEST_REPO = u'http://gitea/buildbot/buildbot'
 
     @defer.inlineCallbacks
     def setUp(self):
+        self.setUpTestReactor()
         # ignore config error if txrequests is not installed
         self.patch(config, '_errors', Mock())
         self.master = fakemaster.make_master(testcase=self,
