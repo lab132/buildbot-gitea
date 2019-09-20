@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
+
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 VERSION = "0.1.0"
 
@@ -10,6 +14,8 @@ setup(name='buildbot-gitea',
       author='Marvin Pohl',
       author_email='hello@lab132.com',
       url='https://github.com/lab132/buildbot-gitea',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       packages=['buildbot_gitea'],
       requires=[
           "buildbot (>=2.0.0)"
@@ -25,4 +31,14 @@ setup(name='buildbot-gitea',
               "GiteaStatusPush = buildbot_gitea.reporter:GiteaStatusPush"
           ]
       },
+      classifiers=[
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Plugins",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: Microsoft :: Windows",
+          "Operating System :: MacOS",
+          "Operating System :: POSIX :: Linux",
+          "Topic :: Software Development :: Build Tools",
+      ]
       )
