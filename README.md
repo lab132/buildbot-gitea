@@ -51,6 +51,38 @@ factory.addStep(steps.Gitea(
 ))
 ```
 
+The webhook currently supports pushes and pull requests by default, but you can
+subclass `buildbot_gitea.webhook.GiteaHandler` to add supports for other events,
+and then use your subclass by setting the `class` parameter:
+
+```py
+# myhook.py
+
+from buildbot_gitea.webhook import GiteaHandler
+class MyGiteaHook(GiteaHandler)
+    def process_whatever(self, payload, event_type, codebase):
+        # This should be a list of dicts
+        changes = []
+
+        return changes
+
+# master.cfg
+
+from myhook import MyGiteaHook
+
+c['www'] = {
+    'change_hook_dialects': {
+        'gitea': {
+            'class': MyGiteaHook,
+            # ...
+        }
+    }
+}
+```
+
+Note that the handlers need to be named according to the scheme:
+`process_{event}` (e.g., `process_create`, etc).
+
 # Parameters
 
 ## Change Hook
@@ -61,6 +93,7 @@ The change hook is set as part of the `www` section in the `change_hook_dialects
 | --- | --- |
 | `secret` | The secret, which needs to be set in gitea |
 | `onlyIncludePushCommit` | A push may have more than one commit associated with it. If this is true, only the newest (latest) commit of all received will be added as a change to buildbot. If this is set to false, all commits will inside the push will be added. |
+| `class` | Set this if you want to use your own handler class (see above for details) |
 
 In gitea in your project or organization and add a new webhook of type gitea.
 Set the parameters as follows:
