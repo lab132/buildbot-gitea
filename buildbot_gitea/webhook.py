@@ -11,7 +11,7 @@ _HEADER_EVENT_TYPE = 'X-Gitea-Event'
 
 class GiteaHandler(BaseHookHandler):
 
-    def processPushEvent(self, payload, event_type, codebase):
+    def process_push(self, payload, event_type, codebase):
         refname = payload["ref"]
 
         changes = []
@@ -56,7 +56,7 @@ class GiteaHandler(BaseHookHandler):
             changes.append(change)
         return changes
 
-    def processPullRequestEvent(self, payload, event_type, codebase):
+    def process_pull_request(self, payload, event_type, codebase):
         action = payload['action']
 
         # Only handle potential new stuff, ignore close/.
@@ -128,17 +128,30 @@ class GiteaHandler(BaseHookHandler):
         codebases = request.args.get('codebase', [None])
         codebase = bytes2unicode(codebases[0])
         changes = []
-        if event_type == 'push':
-            changes = self.processPushEvent(
-                payload, event_type, codebase)
-        elif event_type == 'pull_request':
-            changes = self.processPullRequestEvent(
-                payload, event_type, codebase)
-        else:
+
+        handler_function = getattr(self, 'process_{}'.format(event_type), None)
+        if not handler_function:
             log.msg("Ignoring gitea event '{}'".format(event_type))
+        else:
+            changes = handler_function(payload, event_type, codebase)
 
         return (changes, 'git')
 
 
+class GiteaHandlerPlugin(BaseHookHandler):
+    def __init__(self, master, options):
+        if not options:
+            options = {}
+        super().__init__(master, options)
+
+        handler_class = options.get('class', GiteaHandler)
+        if 'class' in options:
+            del options['class']
+
+        self.handler = handler_class(master, options)
+
+    def getChanges(self, request):
+        return self.handler.getChanges(request)
+
 # Plugin name
-gitea = GiteaHandler
+gitea = GiteaHandlerPlugin
