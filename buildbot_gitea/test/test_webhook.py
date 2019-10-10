@@ -8,7 +8,7 @@ from buildbot.test.util.misc import TestReactorMixin
 from twisted.internet import defer
 from twisted.trial import unittest
 
-from buildbot_gitea.webhook import _HEADER_EVENT_TYPE
+from buildbot_gitea.webhook import GiteaHandler, _HEADER_EVENT_TYPE
 
 giteaJsonPushPayload = rb"""
 {
@@ -891,3 +891,46 @@ class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
         yield self.request.test_render(self.changeHook)
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 0)
+
+class TestChangeHookGiteaClass(unittest.TestCase, TestReactorMixin):
+    class GiteaTestHandler(GiteaHandler):
+        fakeCategory = 'definitely-not-a-real-category'
+
+        def process_push(self, _, __, ___):
+            return [{'category': self.fakeCategory}]
+
+        def process_release(self, _, __, ___):
+            return [{'category': self.fakeCategory}]
+
+    def setUp(self):
+        self.setUpTestReactor()
+        self.changeHook = change_hook.ChangeHookResource(
+            dialects={'gitea': {'class': self.GiteaTestHandler}},
+            master=fakeMasterForHooks(self))
+
+    def checkChanges(self):
+        # There should only be one change because our fake handlers throw the
+        # payloads away and returns their own single change with a single field.
+        self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
+        change = self.changeHook.master.data.updates.changesAdded[0]
+        self.assertEqual(change['category'], self.GiteaTestHandler.fakeCategory)        
+
+    @defer.inlineCallbacks
+    def testOverrideHandlerIsUsed(self):
+        self.request = FakeRequest(content=giteaJsonPushPayload)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b'push'
+        yield self.request.test_render(self.changeHook)
+
+        self.checkChanges()
+
+    @defer.inlineCallbacks
+    def testNewHandler(self):
+        self.request = FakeRequest(content=giteaJsonPushPayload)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b'release'
+        yield self.request.test_render(self.changeHook)
+
+        self.checkChanges()
