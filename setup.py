@@ -30,7 +30,7 @@ setup(name='buildbot-gitea',
           "buildbot.reporters": [
               "GiteaStatusPush = buildbot_gitea.reporter:GiteaStatusPush"
           ],
-          "buildbot.auth": [
+          "buildbot.util": [
               "GiteaAuth = buildbot_gitea.auth:GiteaAuth"
           ]
       },
