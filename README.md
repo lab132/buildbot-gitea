@@ -129,3 +129,29 @@ The parameters are as follows:
 | `context_pr` | `Renderable` The context message to use, when building on a pull request, allowing to identify from which builder this came, defaults to `Interpolate('buildbot/pull_request/%(prop:buildername)s')` |
 | `warningAsSuccess` | Treat warnings as build as success to set in the build status of gitea. If false, warnings will be displayed as warnings. |
 | `verbose` | Perform verbose output |
+
+## Authentication
+
+Gitea supports OAuth2 authentication so it is possible to have buildbot communicate to Gitea to authenticate the user.
+
+`./master.cfg`
+
+```py
+from buildbot_gitea.auth import GiteaAuth
+c['www']['auth'] = GiteaAuth(
+    endpoint="https://your-gitea-host",
+    client_id 'oauth2-client-id',
+    client_secret='oauth2-client-secret')
+```
+
+| Parameter | Value |
+| --- | --- |
+| `endpoint` | The URL to your Gitea app. |
+| `client_id` | The OAuth2 Client ID |
+| `client_secret` | The OAuth2 Client Secret |
+
+Resources:
+
++ [Gitea OAuth2 Provider documentation](https://docs.gitea.io/en-us/oauth2-provider/)
++ [Buildbot OAuth2 documentation](https://docs.buildbot.net/current/developer/cls-auth.html?highlight=oauth2#buildbot.www.oauth2.OAuth2Auth)
++ [Buildbot OAuth2 source](https://github.com/buildbot/buildbot/blob/master/master/buildbot/www/oauth2.py)
