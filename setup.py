@@ -29,6 +29,9 @@ setup(name='buildbot-gitea',
           ],
           "buildbot.reporters": [
               "GiteaStatusPush = buildbot_gitea.reporter:GiteaStatusPush"
+          ],
+          "buildbot.auth": [
+              "GiteaAuth = buildbot_gitea.auth:GiteaAuth"
           ]
       },
       classifiers=[
