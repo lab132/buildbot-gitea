@@ -53,7 +53,7 @@ class GiteaHandler(BaseHookHandler):
             }
             if codebase is not None:
                 change['codebase'] = codebase
-            changes.append(change)
+            changes.insert(0, change)
         return changes
 
     def process_pull_request(self, payload, event_type, codebase):
