@@ -736,22 +736,6 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.assertEqual(
             change["author"], "Max Mustermann <max@example.com>")
         self.assertEqual(
-            change["revision"], '9d7157cc4a137b3e1dfe92750ccfb1bbad239f99')
-        self.assertEqual(
-            change["when_timestamp"],
-            1536063014)
-        self.assertEqual(
-            change["comments"], "TestBranch\n")
-        self.assertEqual(change["branch"], "feature-branch")
-        self.assertEqual(change[
-            "revlink"],
-            "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
-        change = self.changeHook.master.data.updates.changesAdded[1]
-        self.assertEqual(change['repository'], 'ssh://git@git.example.com/max/webhook_test.git')
-
-        self.assertEqual(
-            change["author"], "Max Mustermann <max@example.com>")
-        self.assertEqual(
             change["revision"], 'ad7157cc4a137b3e1dfe92750ccfb1bbad239f9a')
         self.assertEqual(
             change["when_timestamp"],
@@ -762,6 +746,23 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.assertEqual(change[
             "revlink"],
             "https://git.example.com/max/webhook_test/commit/ad7157cc4a137b3e1dfe92750ccfb1bbad239f9a")
+        change = self.changeHook.master.data.updates.changesAdded[1]
+
+        self.assertEqual(change['repository'], 'ssh://git@git.example.com/max/webhook_test.git')
+
+        self.assertEqual(
+            change["author"], "Max Mustermann <max@example.com>")
+        self.assertEqual(
+            change["revision"], '9d7157cc4a137b3e1dfe92750ccfb1bbad239f99')
+        self.assertEqual(
+            change["when_timestamp"],
+            1536063014)
+        self.assertEqual(
+            change["comments"], "TestBranch\n")
+        self.assertEqual(change["branch"], "feature-branch")
+        self.assertEqual(change[
+            "revlink"],
+            "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
 
     def checkChangesFromPullRequest(self, codebase=None):
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
