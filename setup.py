@@ -18,7 +18,7 @@ setup(name='buildbot-gitea',
       long_description_content_type="text/markdown",
       packages=['buildbot_gitea'],
       requires=[
-          "buildbot (>=2.0.0)"
+          "buildbot (>=2.9.0)"
       ],
       entry_points={
           "buildbot.webhooks": [

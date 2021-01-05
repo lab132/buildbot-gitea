@@ -23,8 +23,11 @@ import re
 
 class GiteaStatusPush(http.HttpStatusPushBase):
     name = "GiteaStatusPush"
-    neededDetails = dict(wantProperties=True)
     ssh_url_match = re.compile(r"(ssh://)?[\w+\-\_]+@[\w\.\-\_]+:?(\d*/)?(?P<owner>[\w_\-\.]+)/(?P<repo_name>[\w_\-\.]+?)(\.git)?$")
+
+    def checkConfig(self, baseURL, token, startDescription=None, endDescription=None,
+                    context=None, verbose=False, wantProperties=True, **kwargs):
+        super().checkConfig(wantProperties=wantProperties, **kwargs)
 
     @defer.inlineCallbacks
     def reconfigService(self, baseURL, token,
