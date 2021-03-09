@@ -8,7 +8,9 @@ from buildbot.test.util.misc import TestReactorMixin
 from twisted.internet import defer
 from twisted.trial import unittest
 
-from buildbot_gitea.webhook import GiteaHandler, _HEADER_EVENT_TYPE
+from buildbot_gitea.webhook import GiteaHandler, _HEADER_EVENT_TYPE, _HEADER_SIGNATURE
+
+giteaJsonPushPayload_Signature = 'b5feb0994ad24c209188d36a30cecfea86666aa9c65a419b068f73f91152e7bc'
 
 giteaJsonPushPayload = rb"""
 {
@@ -195,6 +197,8 @@ giteaInvalidSecretPush = rb"""
 }
 """
 
+giteaJsonPullRequestPayload_Signature = '8685905c03fa521dd1eacfb84405195dbca2a08206c3a978a3656399f5dbe01a'
+
 giteaJsonPullRequestPayload = rb"""
 {
   "secret": "test",
@@ -369,6 +373,9 @@ giteaJsonPullRequestPayload = rb"""
   }
 }
 """
+
+
+giteaJsonPullRequestPayloadNotMergeable_Signature = '5552a0cbcbb3fe6286681bc7846754929be0d3f27ccc32914e5fd3ce01f34632'
 
 giteaJsonPullRequestPayloadNotMergeable = rb"""
 {
@@ -545,6 +552,7 @@ giteaJsonPullRequestPayloadNotMergeable = rb"""
 }
 """
 
+giteaJsonPullRequestPayloadMerged_Signature = '4d3b1045aea9aa5cce4f7270d549c11d212c55036d9c547d0c9327891d56bf97'
 giteaJsonPullRequestPayloadMerged = rb"""
 {
   "secret": "test",
@@ -801,6 +809,7 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         res = yield self.request.test_render(self.changeHook)
         self.checkChangesFromPush(res)
 
@@ -810,6 +819,7 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"pull_request"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPullRequestPayload_Signature
         res = yield self.request.test_render(self.changeHook)
         self.checkChangesFromPullRequest(res)
 
@@ -819,6 +829,7 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"pull_request"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPullRequestPayloadNotMergeable_Signature
         yield self.request.test_render(self.changeHook)
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 0)
 
@@ -828,6 +839,7 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"pull_request"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPullRequestPayloadMerged_Signature
         yield self.request.test_render(self.changeHook)
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 0)
 
@@ -864,6 +876,7 @@ class TestChangeHookGiteaPushOnlySingle(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         res = yield self.request.test_render(self.changeHook)
         self.checkChangesFromPush(res)
 
@@ -881,6 +894,7 @@ class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         yield self.request.test_render(self.changeHook)
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 2)
 
@@ -890,6 +904,7 @@ class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         yield self.request.test_render(self.changeHook)
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 0)
 
@@ -914,7 +929,7 @@ class TestChangeHookGiteaClass(unittest.TestCase, TestReactorMixin):
         # payloads away and returns their own single change with a single field.
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
         change = self.changeHook.master.data.updates.changesAdded[0]
-        self.assertEqual(change['category'], self.GiteaTestHandler.fakeCategory)        
+        self.assertEqual(change['category'], self.GiteaTestHandler.fakeCategory)
 
     @defer.inlineCallbacks
     def testOverrideHandlerIsUsed(self):
@@ -922,6 +937,7 @@ class TestChangeHookGiteaClass(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b'push'
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         yield self.request.test_render(self.changeHook)
 
         self.checkChanges()
@@ -932,6 +948,7 @@ class TestChangeHookGiteaClass(unittest.TestCase, TestReactorMixin):
         self.request.uri = b'/change_hook/gitea'
         self.request.method = b'POST'
         self.request.received_headers[_HEADER_EVENT_TYPE] = b'release'
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         yield self.request.test_render(self.changeHook)
 
         self.checkChanges()

@@ -1,5 +1,7 @@
 import json
 import re
+import hmac
+import hashlib
 from buildbot.util import bytes2unicode
 from buildbot.www.hooks.base import BaseHookHandler
 
@@ -7,6 +9,7 @@ from twisted.python import log
 from dateutil.parser import parse as dateparse
 
 _HEADER_EVENT_TYPE = 'X-Gitea-Event'
+_HEADER_SIGNATURE = 'HTTP_X_GITEA_SIGNATURE'
 
 
 class GiteaHandler(BaseHookHandler):
@@ -117,11 +120,21 @@ class GiteaHandler(BaseHookHandler):
             secret = self.options.get('secret')
         try:
             content = request.content.read()
-            payload = json.loads(bytes2unicode(content))
+            content_text = bytes2unicode(content)
+            payload = json.loads(content_text)
         except Exception as exception:
             raise ValueError('Error loading JSON: ' + str(exception))
-        if secret is not None and secret != payload['secret']:
-            raise ValueError('Invalid secret')
+
+        if secret is not None:
+            signature = hmac.new(
+                secret.encode("UTF-8"),
+                content_text.strip().encode("UTF-8"),
+                digestmod=hashlib.sha256)
+            header_signature = bytes2unicode(
+                request.getHeader(_HEADER_SIGNATURE))
+            if signature.hexdigest() != header_signature:
+                raise ValueError('Invalid secret')
+
         event_type = bytes2unicode(request.getHeader(_HEADER_EVENT_TYPE))
         log.msg("Received event '{}' from gitea".format(event_type))
 
