@@ -6,7 +6,7 @@ from setuptools import setup
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 setup(name='buildbot-gitea',
       version=VERSION,
