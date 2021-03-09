@@ -123,8 +123,6 @@ The parameters are as follows:
 | --- | --- |
 | URL | The URL to the gitea instance. |
 | `token` | Generate an access token in the profile you want the buildbot to impersonate. Make sure the account in gitea has access to the repositories. |
-| `startDescription` | `Renderable` A short description when buildbot starts building on a change. Defaults to `Build started.` |
-| `endDescription` | `Renderable` A short description when buildbot stops building on a change. Defaults to `Build done.` |
 | `context` | `Renderable` The context is an identifier for this status, allowing to identify from which builder this came, defaults to `Interpolate('buildbot/%(prop:buildername)s')` |
 | `context_pr` | `Renderable` The context message to use, when building on a pull request, allowing to identify from which builder this came, defaults to `Interpolate('buildbot/pull_request/%(prop:buildername)s')` |
 | `warningAsSuccess` | Treat warnings as build as success to set in the build status of gitea. If false, warnings will be displayed as warnings. |
