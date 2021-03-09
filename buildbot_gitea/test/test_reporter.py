@@ -26,33 +26,36 @@ class TestGiteaStatusPush(
     ReporterTestMixin,
     logging.LoggingMixin,
     TestReactorMixin):
-    # repository must be in the form http://gitea/<owner>/<project>
-    TEST_REPO = u'http://gitea/buildbot/buildbot'
 
     @defer.inlineCallbacks
     def setUp(self):
         self.setUpTestReactor()
+
+        self.setup_reporter_test()
+
+    # repository must be in the form http://gitea/<owner>/<project>
+        self.reporter_test_repo = u'http://gitea/buildbot/buildbot'
+
         # ignore config error if txrequests is not installed
         self.patch(config, '_errors', Mock())
         self.master = fakemaster.make_master(testcase=self,
                                              wantData=True, wantDb=True, wantMq=True)
 
         yield self.master.startService()
-        self._http = yield fakehttpclientservice.HTTPClientService.getFakeService(
+        self._http = yield fakehttpclientservice.HTTPClientService.getService(
             self.master, self,
             "http://gitea", headers={'Authorization': 'token XXYYZZ'},
             debug=None, verify=None)
-        self.sp = sp = GiteaStatusPush("http://gitea/", Interpolate('XXYYZZ'))
-        sp.sessionFactory = Mock(return_value=Mock())
+        self.sp = GiteaStatusPush("http://gitea/", Interpolate('XXYYZZ'))
 
-        yield sp.setServiceParent(self.master)
+        yield self.sp.setServiceParent(self.master)
 
     def tearDown(self):
         return self.master.stopService()
 
     def setupProps(self):
-        self.TEST_PROPS['owner'] = "buildbot"
-        self.TEST_PROPS['repository_name'] = "buildbot"
+        self.reporter_test_props['owner'] = "buildbot"
+        self.reporter_test_props['repository_name'] = "buildbot"
 
     @defer.inlineCallbacks
     def setupBuildResults(self, buildResults):
@@ -85,11 +88,11 @@ class TestGiteaStatusPush(
                   'description': 'Build done.', 'context': 'buildbot/Builder0'})
 
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
+        self.sp._got_event(('builds', 20, 'new'), build)
         build['complete'] = True
-        self.sp.buildFinished(("build", 20, "finished"), build)
+        self.sp._got_event(('builds', 20, 'finished'), build)
         build['results'] = FAILURE
-        self.sp.buildFinished(("build", 20, "finished"), build)
+        self.sp._got_event(('builds', 20, 'finished'), build)
 
     @defer.inlineCallbacks
     def test_sshurl(self):
@@ -104,11 +107,11 @@ class TestGiteaStatusPush(
                   'target_url': 'http://localhost:8080/#builders/79/builds/0',
                   'description': 'Build started.', 'context': 'buildbot/Builder0'})
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
+        self.sp._got_event(('builds', 20, 'new'), build)
 
     @defer.inlineCallbacks
     def test_sshurl_noprops(self):
-        self.TEST_REPO = u'git@gitea:buildbot/buildbot.git'
+        self.reporter_test_repo = u'git@gitea:buildbot/buildbot.git'
         build = yield self.setupBuildResults(SUCCESS)
         # we make sure proper calls to txrequests have been made
         self._http.expect(
@@ -118,17 +121,17 @@ class TestGiteaStatusPush(
                   'target_url': 'http://localhost:8080/#builders/79/builds/0',
                   'description': 'Build started.', 'context': 'buildbot/Builder0'})
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
+        self.sp._got_event(('builds', 20, 'new'), build)
 
     @defer.inlineCallbacks
     def test_noowner(self):
         self.setUpLogging()
         self.setupProps()
-        del self.TEST_PROPS["owner"]
+        del self.reporter_test_props["owner"]
         self.TEST_REPO = u''
         build = yield self.setupBuildResults(SUCCESS)
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
+        self.sp._got_event(('builds', 20, 'new'), build)
         # implicit check that no http request is done
         self.assertLogged("Could not send status, "
                     "build has no owner property for Gitea.")
@@ -137,11 +140,11 @@ class TestGiteaStatusPush(
     def test_noreponame(self):
         self.setUpLogging()
         self.setupProps()
-        del self.TEST_PROPS["repository_name"]
+        del self.reporter_test_props["repository_name"]
         self.TEST_REPO = u''
         build = yield self.setupBuildResults(SUCCESS)
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
+        self.sp._got_event(('builds', 20, 'new'), build)
         # implicit check that no http request is done
         self.assertLogged("Could not send status, "
                     "build has no repository_name property for Gitea.")
@@ -150,7 +153,7 @@ class TestGiteaStatusPush(
     def test_senderror(self):
         self.setupProps()
         self.setUpLogging()
-        build = yield self.setupBuildResults(SUCCESS)
+        build = yield self.insert_build_new()
         # we make sure proper calls to txrequests have been made
         self._http.expect(
             'post',
@@ -164,7 +167,7 @@ class TestGiteaStatusPush(
             },
             code=500)
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
+        self.sp._got_event(("builds", 20, "new"), build)
         self.assertLogged(
             "Could not send status \"pending\" for "
             "http://gitea/buildbot/buildbot at d34db33fd43db33f:"
@@ -174,10 +177,22 @@ class TestGiteaStatusPush(
     def test_badchange(self):
         self.setupProps()
         self.setUpLogging()
-        build = yield self.setupBuildResults(SUCCESS)
+        build = yield self.insert_build_new()
         # we make sure proper calls to txrequests have been made
+        self._http.expect(
+            'post',
+            '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
+            json={
+                'state': 'pending',
+                'description': 'Build started.',
+                'target_url': 'http://localhost:8080/#builders/79/builds/0',
+                'context': 'buildbot/Builder0'
+            },
+            content_json={"message": "Not found"},
+            code=404,
+        )
         build['complete'] = False
-        self.sp.buildStarted(("build", 20, "started"), build)
-        self.assertLogged("Failed to send status \"pending\" for"
+        yield self.sp._got_event(("builds", 20, "new"), build)
+        self.assertLogged("Could not send status \"pending\" for"
                           " http://gitea/buildbot/buildbot at d34db33fd43db33f")
         self.flushLoggedErrors(AssertionError)

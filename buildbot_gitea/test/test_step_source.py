@@ -77,7 +77,7 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
             + 0,
             # here we always ignore revision, and fetch the merge branch
             ExpectShell(workdir='wkdir',
-                        command=['git', 'fetch', '-t',
+                        command=['git', 'fetch', '-f', '-t',
                                  'git@gitea.example.com:base/awesome_project.git', 'HEAD', '--progress'])
             + 0,
             ExpectShell(workdir='wkdir',
