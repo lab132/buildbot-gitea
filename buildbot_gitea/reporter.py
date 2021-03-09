@@ -18,36 +18,46 @@ from buildbot.process.results import WARNINGS
 from buildbot.reporters import http
 from buildbot.util import httpclientservice
 from buildbot.warnings import warn_deprecated
+from buildbot.reporters.generators.build import BuildStartEndStatusGenerator
+from buildbot.reporters.message import MessageFormatterRenderable
 
 import re
 
 
-class GiteaStatusPush(http.HttpStatusPushBase):
+class GiteaStatusPush(http.ReporterBase):
     name = "GiteaStatusPush"
     ssh_url_match = re.compile(r"(ssh://)?[\w+\-\_]+@[\w\.\-\_]+:?(\d*/)?(?P<owner>[\w_\-\.]+)/(?P<repo_name>[\w_\-\.]+?)(\.git)?$")
 
-    def checkConfig(self, baseURL, token, startDescription=None, endDescription=None,
-                    context=None, verbose=False, wantProperties=True, **kwargs):
-        super().checkConfig(wantProperties=wantProperties,
-                            _has_old_arg_names={
-                                'builders': False,
-                                'wantProperties': wantProperties is not True
-                            }, **kwargs)
+    def checkConfig(self, token, context=None, baseURL=None, verbose=False,
+                    debug=None, verify=None, generators=None,
+                    **kwargs):
+
+        if generators is None:
+            generators = self._create_default_generators()
+
+        super().checkConfig(generators=generators, **kwargs)
+        httpclientservice.HTTPClientService.checkAvailable(
+            self.__class__.__name__)
 
     @defer.inlineCallbacks
     def reconfigService(self, baseURL, token,
-                        startDescription=None, endDescription=None,
-                        context=None, context_pr=None, verbose=False, wantProperties=True,
+                        context=None, context_pr=None, verbose=False,
+                        debug=None, verify=None,
+                        generators=None,
                         warningAsSuccess=False, **kwargs):
 
         token = yield self.renderSecrets(token)
-        yield super().reconfigService(wantProperties=wantProperties, **kwargs)
+        self.debug = debug
+        self.verify = verify
+        self.verbose = verbose
+        if generators is None:
+            generators = self._create_default_generators()
+
+        yield super().reconfigService(generators=generators, **kwargs)
 
         self.context = context or Interpolate('buildbot/%(prop:buildername)s')
         self.context_pr = context_pr or \
             Interpolate('buildbot/pull_request/%(prop:buildername)s')
-        self.startDescription = startDescription or 'Build started.'
-        self.endDescription = endDescription or 'Build done.'
         if baseURL.endswith('/'):
             baseURL = baseURL[:-1]
         self.baseURL = baseURL
@@ -58,6 +68,15 @@ class GiteaStatusPush(http.HttpStatusPushBase):
         self.verbose = verbose
         self.project_ids = {}
         self.warningAsSuccess = warningAsSuccess
+
+    def _create_default_generators(self):
+        start_formatter = MessageFormatterRenderable('Build started.')
+        end_formatter = MessageFormatterRenderable('Build done.')
+
+        return [
+            BuildStartEndStatusGenerator(start_formatter=start_formatter,
+                                         end_formatter=end_formatter)
+        ]
 
     def createStatus(self,
                      project_owner, repo_name, sha, state, target_url=None,
@@ -106,12 +125,16 @@ class GiteaStatusPush(http.HttpStatusPushBase):
             warn_deprecated('2.9.0', 'send() in reporters has been deprecated. Use sendMessage()')
             yield self.send(build)
         else:
-            yield self._send_impl(build)
+            yield self._send_impl(reports)
 
     @defer.inlineCallbacks
-    def _send_impl(self, build):
+    def _send_impl(self, reports):
+        report = reports[0]
+        build = report['builds'][0]
         props = Properties.fromDict(build['properties'])
         props.master = self.master
+
+        description = report.get('body', None)
 
         if build['complete']:
             state = {
@@ -123,10 +146,8 @@ class GiteaStatusPush(http.HttpStatusPushBase):
                 RETRY: 'pending',
                 CANCELLED: 'error'
             }.get(build['results'], 'failure')
-            description = yield props.render(self.endDescription)
         else:
             state = 'pending'
-            description = yield props.render(self.startDescription)
 
         if 'pr_id' in props:
             context = yield props.render(self.context_pr)
