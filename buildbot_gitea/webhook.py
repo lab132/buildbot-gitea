@@ -9,7 +9,7 @@ from twisted.python import log
 from dateutil.parser import parse as dateparse
 
 _HEADER_EVENT_TYPE = 'X-Gitea-Event'
-_HEADER_SIGNATURE = 'HTTP_X_GITEA_SIGNATURE'
+_HEADER_SIGNATURE = 'X-Gitea-Signature'
 
 
 class GiteaHandler(BaseHookHandler):
