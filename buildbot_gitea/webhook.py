@@ -33,10 +33,14 @@ class GiteaHandler(BaseHookHandler):
             commits = commits[:1]
 
         for commit in commits:
+            files = []
+            for kind in ('added', 'modified', 'removed'):
+                files.extend(commit.get(kind, []))
             timestamp = dateparse(commit['timestamp'])
             change = {
                 'author': '{} <{}>'.format(commit['author']['name'],
                                            commit['author']['email']),
+                'files': files,
                 'comments': commit['message'],
                 'revision': commit['id'],
                 'when_timestamp': timestamp,
