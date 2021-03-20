@@ -113,6 +113,130 @@ giteaJsonPushPayload = rb"""
 }
 """
 
+giteaJsonPushModifiedFiles = rb"""
+{
+  "secret": "pass",
+  "ref": "refs/heads/master",
+  "before": "92a8bf0e02b2146e6b35b71d6e08c376133b7fc9",
+  "after": "ea07c3148db428876add8b312256239275c395fb",
+  "compare_url": "https://git.example.com/Test/test/compare/92a8bf0e02b2146e6b35b71d6e08c376133b7fc9...ea07c3148db428876add8b312256239275c395fb",
+  "commits": [
+    {
+      "id": "ea07c3148db428876add8b312256239275c395fb",
+      "message": "test123\n",
+      "url": "https://git.example.com/Test/test/commit/ea07c3148db428876add8b312256239275c395fb",
+      "author": {
+        "name": "Test User",
+        "email": "Test@example.com",
+        "username": "Test"
+      },
+      "committer": {
+        "name": "Test User",
+        "email": "Test@example.com",
+        "username": "Test"
+      },
+      "verification": null,
+      "timestamp": "2021-03-09T20:12:19Z",
+      "added": [
+        "testfile2"
+      ],
+      "removed": [
+        "testfile3"
+      ],
+      "modified": [
+        "testfile1"
+      ]
+    }
+  ],
+  "head_commit": null,
+  "repository": {
+    "id": 29,
+    "owner": {
+      "id": 1,
+      "login": "Test",
+      "full_name": "Test User",
+      "email": "Test@example.com",
+      "avatar_url": "https://git.example.com/user/avatar/Test/-1",
+      "language": "en-US",
+      "is_admin": true,
+      "last_login": "2021-03-09T20:10:52Z",
+      "created": "2018-06-05T09:41:06Z",
+      "username": "Test"
+    },
+    "name": "test",
+    "full_name": "Test/test",
+    "description": "",
+    "empty": false,
+    "private": true,
+    "fork": false,
+    "template": false,
+    "parent": null,
+    "mirror": false,
+    "size": 17,
+    "html_url": "https://git.example.com/Test/test",
+    "ssh_url": "ssh://git@git.example.com/Test/test.git",
+    "clone_url": "https://git.example.com/Test/test.git",
+    "original_url": "",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 1,
+    "open_issues_count": 0,
+    "open_pr_counter": 0,
+    "release_counter": 0,
+    "default_branch": "master",
+    "archived": false,
+    "created_at": "2019-03-03T17:26:23Z",
+    "updated_at": "2021-03-09T20:12:20Z",
+    "permissions": {
+      "admin": true,
+      "push": true,
+      "pull": true
+    },
+    "has_issues": true,
+    "internal_tracker": {
+      "enable_time_tracker": false,
+      "allow_only_contributors_to_track_time": true,
+      "enable_issue_dependencies": true
+    },
+    "has_wiki": true,
+    "has_pull_requests": true,
+    "has_projects": false,
+    "ignore_whitespace_conflicts": false,
+    "allow_merge_commits": true,
+    "allow_rebase": true,
+    "allow_rebase_explicit": true,
+    "allow_squash_merge": true,
+    "avatar_url": "",
+    "internal": false
+  },
+  "pusher": {
+    "id": 1,
+    "login": "Test",
+    "full_name": "Test User",
+    "email": "Test@example.com",
+    "avatar_url": "https://git.example.com/user/avatar/Test/-1",
+    "language": "en-US",
+    "is_admin": true,
+    "last_login": "2021-03-09T20:10:52Z",
+    "created": "2018-06-05T09:41:06Z",
+    "username": "Test"
+  },
+  "sender": {
+    "id": 1,
+    "login": "Test",
+    "full_name": "Test User",
+    "email": "Test@example.com",
+    "avatar_url": "https://git.example.com/user/avatar/Test/-1",
+    "language": "en-US",
+    "is_admin": true,
+    "last_login": "2021-03-09T20:10:52Z",
+    "created": "2018-06-05T09:41:06Z",
+    "username": "Test"
+  }
+}
+"""
+
 giteaInvalidSecretPush = rb"""
 {
   "secret": "invalidSecret",
@@ -772,6 +896,23 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
             "revlink"],
             "https://git.example.com/max/webhook_test/commit/9d7157cc4a137b3e1dfe92750ccfb1bbad239f99")
 
+    def checkFileChanges(self, codebase=None):
+        self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
+        change = self.changeHook.master.data.updates.changesAdded[0]
+        self.assertEqual(change['repository'], 'ssh://git@git.example.com/Test/test.git')
+
+        self.assertEqual(
+            change["author"], "Test User <Test@example.com>")
+        self.assertEqual(
+            change["revision"], 'ea07c3148db428876add8b312256239275c395fb')
+        self.assertEqual(
+            change["comments"], "test123\n")
+        self.assertEqual(change["branch"], "master")
+        self.assertEqual(change[
+            "revlink"],
+            "https://git.example.com/Test/test/commit/ea07c3148db428876add8b312256239275c395fb")
+        self.assertEqual(change["files"], ["testfile2", "testfile1", "testfile3"])
+
     def checkChangesFromPullRequest(self, codebase=None):
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
         change = self.changeHook.master.data.updates.changesAdded[0]
@@ -812,6 +953,15 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
         res = yield self.request.test_render(self.changeHook)
         self.checkChangesFromPush(res)
+
+    @defer.inlineCallbacks
+    def testChangedFiles(self):
+        self.request = FakeRequest(content=giteaJsonPushModifiedFiles)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        res = yield self.request.test_render(self.changeHook)
+        self.checkFileChanges(res)
 
     @defer.inlineCallbacks
     def testPullRequestEvent(self):
