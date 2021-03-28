@@ -852,6 +852,321 @@ giteaJsonPullRequestPayloadMerged = rb"""
 }
 """
 
+giteaJsonPullRequestFork = rb"""
+{
+  "secret": "test",
+  "action": "opened",
+  "number": 4,
+  "pull_request": {
+    "id": 36,
+    "url": "https://git.example.com/testuser/webhook_test/pulls/4",
+    "number": 4,
+    "user": {
+      "id": 1,
+      "login": "testuser",
+      "full_name": "testuser name",
+      "email": "testuser@example.com",
+      "avatar_url": "https://git.example.com/user/avatar/testuser/-1",
+      "language": "en-US",
+      "is_admin": true,
+      "last_login": "2021-03-27T13:53:28Z",
+      "created": "2018-06-05T09:41:06Z",
+      "username": "testuser"
+    },
+    "title": "testfork",
+    "body": "Test PR",
+    "labels": [],
+    "milestone": null,
+    "assignee": null,
+    "assignees": null,
+    "state": "open",
+    "is_locked": false,
+    "comments": 0,
+    "html_url": "https://git.example.com/testuser/webhook_test/pulls/4",
+    "diff_url": "https://git.example.com/testuser/webhook_test/pulls/4.diff",
+    "patch_url": "https://git.example.com/testuser/webhook_test/pulls/4.patch",
+    "mergeable": true,
+    "merged": false,
+    "merged_at": null,
+    "merge_commit_sha": null,
+    "merged_by": null,
+    "base": {
+      "label": "master",
+      "ref": "master",
+      "sha": "449a5a8ca05607106b5ba41988c1a658a8949a18",
+      "repo_id": 20,
+      "repo": {
+        "id": 20,
+        "owner": {
+          "id": 1,
+          "login": "testuser",
+          "full_name": "testuser name",
+          "email": "testuser@example.com",
+          "avatar_url": "https://git.example.com/user/avatar/testuser/-1",
+          "language": "en-US",
+          "is_admin": true,
+          "last_login": "2021-03-27T13:53:28Z",
+          "created": "2018-06-05T09:41:06Z",
+          "username": "testuser"
+        },
+        "name": "webhook_test",
+        "full_name": "testuser/webhook_test",
+        "description": "",
+        "empty": false,
+        "private": true,
+        "fork": false,
+        "template": false,
+        "parent": null,
+        "mirror": false,
+        "size": 76,
+        "html_url": "https://git.example.com/testuser/webhook_test",
+        "ssh_url": "ssh://git@git.example.com/testuser/webhook_test.git",
+        "clone_url": "https://git.example.com/testuser/webhook_test.git",
+        "original_url": "",
+        "website": "",
+        "stars_count": 0,
+        "forks_count": 1,
+        "watchers_count": 1,
+        "open_issues_count": 0,
+        "open_pr_counter": 1,
+        "release_counter": 0,
+        "default_branch": "master",
+        "archived": false,
+        "created_at": "2018-09-04T10:45:23Z",
+        "updated_at": "2018-09-04T13:05:51Z",
+        "permissions": {
+          "admin": false,
+          "push": false,
+          "pull": false
+        },
+        "has_issues": true,
+        "internal_tracker": {
+          "enable_time_tracker": false,
+          "allow_only_contributors_to_track_time": true,
+          "enable_issue_dependencies": true
+        },
+        "has_wiki": true,
+        "has_pull_requests": true,
+        "has_projects": false,
+        "ignore_whitespace_conflicts": false,
+        "allow_merge_commits": true,
+        "allow_rebase": true,
+        "allow_rebase_explicit": true,
+        "allow_squash_merge": true,
+        "avatar_url": "",
+        "internal": false
+      }
+    },
+    "head": {
+      "label": "feature_branch",
+      "ref": "feature_branch",
+      "sha": "53e3075cbe468f14c2801d186d703e64b2adee12",
+      "repo_id": 34,
+      "repo": {
+        "id": 34,
+        "owner": {
+          "id": 14,
+          "login": "test_org",
+          "full_name": "",
+          "email": "",
+          "avatar_url": "https://git.example.com/user/avatar/test_org/-1",
+          "language": "",
+          "is_admin": false,
+          "last_login": "1970-01-01T00:00:00Z",
+          "created": "2018-09-27T11:35:41Z",
+          "username": "test_org"
+        },
+        "name": "webhook_test_fork",
+        "full_name": "test_org/webhook_test_fork",
+        "description": "",
+        "empty": false,
+        "private": true,
+        "fork": true,
+        "template": false,
+        "parent": {
+          "id": 20,
+          "owner": {
+            "id": 1,
+            "login": "testuser",
+            "full_name": "testuser name",
+            "email": "testuser@example.com",
+            "avatar_url": "https://git.example.com/user/avatar/testuser/-1",
+            "language": "en-US",
+            "is_admin": true,
+            "last_login": "2021-03-27T13:53:28Z",
+            "created": "2018-06-05T09:41:06Z",
+            "username": "testuser"
+          },
+          "name": "webhook_test",
+          "full_name": "testuser/webhook_test",
+          "description": "",
+          "empty": false,
+          "private": true,
+          "fork": false,
+          "template": false,
+          "parent": null,
+          "mirror": false,
+          "size": 76,
+          "html_url": "https://git.example.com/testuser/webhook_test",
+          "ssh_url": "ssh://git@git.example.com/testuser/webhook_test.git",
+          "clone_url": "https://git.example.com/testuser/webhook_test.git",
+          "original_url": "",
+          "website": "",
+          "stars_count": 0,
+          "forks_count": 1,
+          "watchers_count": 1,
+          "open_issues_count": 0,
+          "open_pr_counter": 2,
+          "release_counter": 0,
+          "default_branch": "master",
+          "archived": false,
+          "created_at": "2018-09-04T10:45:23Z",
+          "updated_at": "2018-09-04T13:05:51Z",
+          "permissions": {
+            "admin": false,
+            "push": false,
+            "pull": false
+          },
+          "has_issues": true,
+          "internal_tracker": {
+            "enable_time_tracker": false,
+            "allow_only_contributors_to_track_time": true,
+            "enable_issue_dependencies": true
+          },
+          "has_wiki": true,
+          "has_pull_requests": true,
+          "has_projects": false,
+          "ignore_whitespace_conflicts": false,
+          "allow_merge_commits": true,
+          "allow_rebase": true,
+          "allow_rebase_explicit": true,
+          "allow_squash_merge": true,
+          "avatar_url": "",
+          "internal": false
+        },
+        "mirror": false,
+        "size": 19,
+        "html_url": "https://git.example.com/test_org/webhook_test_fork",
+        "ssh_url": "ssh://git@git.example.com/test_org/webhook_test_fork.git",
+        "clone_url": "https://git.example.com/test_org/webhook_test_fork.git",
+        "original_url": "",
+        "website": "",
+        "stars_count": 0,
+        "forks_count": 0,
+        "watchers_count": 1,
+        "open_issues_count": 0,
+        "open_pr_counter": 0,
+        "release_counter": 0,
+        "default_branch": "master",
+        "archived": false,
+        "created_at": "2021-03-28T21:40:46Z",
+        "updated_at": "2021-03-28T21:41:01Z",
+        "permissions": {
+          "admin": false,
+          "push": false,
+          "pull": false
+        },
+        "has_issues": true,
+        "internal_tracker": {
+          "enable_time_tracker": false,
+          "allow_only_contributors_to_track_time": true,
+          "enable_issue_dependencies": true
+        },
+        "has_wiki": true,
+        "has_pull_requests": true,
+        "has_projects": true,
+        "ignore_whitespace_conflicts": false,
+        "allow_merge_commits": true,
+        "allow_rebase": true,
+        "allow_rebase_explicit": true,
+        "allow_squash_merge": true,
+        "avatar_url": "",
+        "internal": false
+      }
+    },
+    "merge_base": "449a5a8ca05607106b5ba41988c1a658a8949a18",
+    "due_date": null,
+    "created_at": "2021-03-28T21:41:24Z",
+    "updated_at": "2021-03-28T21:41:24Z",
+    "closed_at": null
+  },
+  "repository": {
+    "id": 20,
+    "owner": {
+      "id": 1,
+      "login": "testuser",
+      "full_name": "testuser name",
+      "email": "testuser@example.com",
+      "avatar_url": "https://git.example.com/user/avatar/testuser/-1",
+      "language": "en-US",
+      "is_admin": true,
+      "last_login": "2021-03-27T13:53:28Z",
+      "created": "2018-06-05T09:41:06Z",
+      "username": "testuser"
+    },
+    "name": "webhook_test",
+    "full_name": "testuser/webhook_test",
+    "description": "",
+    "empty": false,
+    "private": true,
+    "fork": false,
+    "template": false,
+    "parent": null,
+    "mirror": false,
+    "size": 76,
+    "html_url": "https://git.example.com/testuser/webhook_test",
+    "ssh_url": "ssh://git@git.example.com/testuser/webhook_test.git",
+    "clone_url": "https://git.example.com/testuser/webhook_test.git",
+    "original_url": "",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 1,
+    "watchers_count": 1,
+    "open_issues_count": 0,
+    "open_pr_counter": 2,
+    "release_counter": 0,
+    "default_branch": "master",
+    "archived": false,
+    "created_at": "2018-09-04T10:45:23Z",
+    "updated_at": "2018-09-04T13:05:51Z",
+    "permissions": {
+      "admin": true,
+      "push": true,
+      "pull": true
+    },
+    "has_issues": true,
+    "internal_tracker": {
+      "enable_time_tracker": false,
+      "allow_only_contributors_to_track_time": true,
+      "enable_issue_dependencies": true
+    },
+    "has_wiki": true,
+    "has_pull_requests": true,
+    "has_projects": false,
+    "ignore_whitespace_conflicts": false,
+    "allow_merge_commits": true,
+    "allow_rebase": true,
+    "allow_rebase_explicit": true,
+    "allow_squash_merge": true,
+    "avatar_url": "",
+    "internal": false
+  },
+  "sender": {
+    "id": 1,
+    "login": "testuser",
+    "full_name": "testuser name",
+    "email": "testuser@example.com",
+    "avatar_url": "https://git.example.com/user/avatar/testuser/-1",
+    "language": "en-US",
+    "is_admin": true,
+    "last_login": "2021-03-27T13:53:28Z",
+    "created": "2018-06-05T09:41:06Z",
+    "username": "testuser"
+  },
+  "review": null
+}
+"""
+
 
 class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
     def setUp(self):
@@ -921,13 +1236,13 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.assertEqual(
             change["author"], "Max Mustermann <max@example.com>")
         self.assertEqual(
-            change["revision"], '9d7157cc4a137b3e1dfe92750ccfb1bbad239f99')
+            change["revision"], '7c5de0796c409e7802abe759113d7fc37e0d6578')
         self.assertEqual(
             change["when_timestamp"],
             1536063289)
         self.assertEqual(
             change["comments"], "PR#1: TestPR\n\n")
-        self.assertEqual(change["branch"], "feature-branch")
+        self.assertEqual(change["branch"], "master")
         self.assertEqual(change[
             "revlink"], "https://git.example.com/max/webhook_test/pulls/1")
         properties = change["properties"]
@@ -943,6 +1258,32 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
 
         self.assertEqual(properties["pr_id"], 8)
         self.assertEqual(properties["pr_number"], 1)
+
+    def checkChangesFromPullRequestFork(self, codebase=None):
+        self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
+        change = self.changeHook.master.data.updates.changesAdded[0]
+        self.assertEqual(change['repository'], 'ssh://git@git.example.com/testuser/webhook_test.git')
+
+        self.assertEqual(
+            change["author"], "testuser name <testuser@example.com>")
+        self.assertEqual(
+            change["revision"], '449a5a8ca05607106b5ba41988c1a658a8949a18')
+        self.assertEqual(change["branch"], "master")
+        self.assertEqual(change[
+            "revlink"], "https://git.example.com/testuser/webhook_test/pulls/4")
+        properties = change["properties"]
+        self.assertEqual(properties["base_branch"], "master")
+        self.assertEqual(properties["base_sha"], "449a5a8ca05607106b5ba41988c1a658a8949a18")
+        self.assertEqual(properties["base_repository"], "https://git.example.com/testuser/webhook_test.git")
+        self.assertEqual(properties["base_git_ssh_url"], "ssh://git@git.example.com/testuser/webhook_test.git")
+
+        self.assertEqual(properties["head_branch"], "feature_branch")
+        self.assertEqual(properties["head_sha"], "53e3075cbe468f14c2801d186d703e64b2adee12")
+        self.assertEqual(properties["head_repository"], "https://git.example.com/test_org/webhook_test_fork.git")
+        self.assertEqual(properties["head_git_ssh_url"], "ssh://git@git.example.com/test_org/webhook_test_fork.git")
+
+        self.assertEqual(properties["pr_id"], 36)
+        self.assertEqual(properties["pr_number"], 4)
 
     @defer.inlineCallbacks
     def testPushEvent(self):
@@ -972,6 +1313,15 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPullRequestPayload_Signature
         res = yield self.request.test_render(self.changeHook)
         self.checkChangesFromPullRequest(res)
+
+    @defer.inlineCallbacks
+    def testPullRequestForkEvent(self):
+        self.request = FakeRequest(content=giteaJsonPullRequestFork)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"pull_request"
+        res = yield self.request.test_render(self.changeHook)
+        self.checkChangesFromPullRequestFork(res)
 
     @defer.inlineCallbacks
     def testPullRequestNotMergeableEvent(self):
