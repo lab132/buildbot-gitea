@@ -2,10 +2,13 @@ import json
 import re
 import hmac
 import hashlib
-from buildbot.util import bytes2unicode
+from buildbot.process.properties import Properties
+from buildbot.util import bytes2unicode, unicode2bytes
 from buildbot.www.hooks.base import BaseHookHandler
 
+from twisted.internet import defer
 from twisted.python import log
+
 from dateutil.parser import parse as dateparse
 
 _HEADER_EVENT_TYPE = 'X-Gitea-Event'
@@ -118,6 +121,7 @@ class GiteaHandler(BaseHookHandler):
             change['codebase'] = codebase
         return [change]
 
+    @defer.inlineCallbacks
     def getChanges(self, request):
         secret = None
         if isinstance(self.options, dict):
@@ -130,9 +134,12 @@ class GiteaHandler(BaseHookHandler):
             raise ValueError('Error loading JSON: ' + str(exception))
 
         if secret is not None:
+            p = Properties()
+            p.master = self.master
+            rendered_secret = yield p.render(secret)
             signature = hmac.new(
-                secret.encode("UTF-8"),
-                content_text.strip().encode("UTF-8"),
+                unicode2bytes(rendered_secret),
+                unicode2bytes(content_text.strip()),
                 digestmod=hashlib.sha256)
             header_signature = bytes2unicode(
                 request.getHeader(_HEADER_SIGNATURE))
