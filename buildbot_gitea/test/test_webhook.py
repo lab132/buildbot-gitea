@@ -2,6 +2,9 @@ import buildbot.www.change_hook as change_hook
 from buildbot.test.fake.web import FakeRequest
 from buildbot.test.fake.web import fakeMasterForHooks
 from buildbot.test.util.misc import TestReactorMixin
+from buildbot.secrets.manager import SecretManager
+from buildbot.test.fake.secrets import FakeSecretStorage
+from buildbot.process.properties import Secret
 
 
 
@@ -1387,6 +1390,42 @@ class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {"secret": "test"}},
             master=fakeMasterForHooks(self))
+
+    @defer.inlineCallbacks
+    def testValidSecret(self):
+        self.request = FakeRequest(content=giteaJsonPushPayload)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
+        yield self.request.test_render(self.changeHook)
+        self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 2)
+
+    @defer.inlineCallbacks
+    def testInvalidSecret(self):
+        self.request = FakeRequest(content=giteaInvalidSecretPush)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        self.request.received_headers[_HEADER_SIGNATURE] = giteaJsonPushPayload_Signature
+        yield self.request.test_render(self.changeHook)
+        self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 0)
+
+
+class TestChangeHookGiteaSecretPhraseProvider(unittest.TestCase, TestReactorMixin):
+    def setUp(self):
+        self.setUpTestReactor()
+        self.master = fakeMasterForHooks(self)
+        self.changeHook = change_hook.ChangeHookResource(
+            dialects={'gitea': {"secret": Secret("token")}},
+            master=self.master)
+
+        fake_storage_service = FakeSecretStorage()
+
+        secret_service = SecretManager()
+        secret_service.services = [fake_storage_service]
+        secret_service.setServiceParent(self.master)
+        fake_storage_service.reconfigService(secretdict={"token": "test"})
 
     @defer.inlineCallbacks
     def testValidSecret(self):
