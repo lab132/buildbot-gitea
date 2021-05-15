@@ -95,6 +95,24 @@ class TestGiteaStatusPush(
         self.sp._got_event(('builds', 20, 'finished'), build)
 
     @defer.inlineCallbacks
+    def test_pullrequest(self):
+        self.setupProps()
+        self.reporter_test_props["pr_id"] = 42
+        self.reporter_test_props["head_owner"] = 'foo'
+        self.reporter_test_props["head_reponame"] = 'bar'
+        build = yield self.setupBuildResults(SUCCESS)
+        # we make sure proper calls to txrequests have been made
+        self._http.expect(
+            'post',
+            '/api/v1/repos/foo/bar/statuses/d34db33fd43db33f',
+            json={'state': 'success',
+                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
+                  'description': 'Build done.', 'context': 'buildbot/pull_request/Builder0'})
+
+        build['complete'] = True
+        self.sp._got_event(('builds', 20, 'finished'), build)
+        
+    @defer.inlineCallbacks
     def test_sshurl(self):
         self.setupProps()
         self.TEST_REPO = u'git@gitea:buildbot/buildbot.git'

@@ -111,6 +111,8 @@ class GiteaHandler(BaseHookHandler):
                 'head_repo_id': head['repo_id'],
                 'head_repository': head['repo']['clone_url'],
                 'head_git_ssh_url': head['repo']['ssh_url'],
+                'head_owner': head['repo']['owner']['username'],
+                'head_reponame': head['repo']['name'],
                 'pr_id': pull_request['id'],
                 'pr_number': pull_request['number'],
                 'repository_name': repository['name'],

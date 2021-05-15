@@ -158,10 +158,15 @@ class GiteaStatusPush(http.ReporterBase):
 
         for sourcestamp in sourcestamps:
             sha = sourcestamp['revision']
+            repository_owner = None
             if sha is None:
                 # No special revision for this, so ignore it
                 continue
-            if 'repository_name' in props:
+            # If this is a pull request, send the status to the head repository
+            if 'pr_id' in props:
+                repository_name = props['head_reponame']
+                repository_owner = props['head_owner']
+            elif 'repository_name' in props:
                 repository_name = props['repository_name']
             else:
                 match = re.match(self.ssh_url_match, sourcestamp['repository'])
@@ -172,17 +177,18 @@ class GiteaStatusPush(http.ReporterBase):
                         "Could not send status, "
                         "build has no repository_name property for Gitea.")
                     continue
-            if 'owner' in props:
-                repository_owner = props['owner']
-            else:
-                match = re.match(self.ssh_url_match, sourcestamp['repository'])
-                if match is not None:
-                    repository_owner = match.group("owner")
+            if repository_owner is None:
+                if 'owner' in props:
+                    repository_owner = props['owner']
                 else:
-                    log.msg(
-                        "Could not send status, "
-                        "build has no owner property for Gitea.")
-                    continue
+                    match = re.match(self.ssh_url_match, sourcestamp['repository'])
+                    if match is not None:
+                        repository_owner = match.group("owner")
+                    else:
+                        log.msg(
+                            "Could not send status, "
+                            "build has no owner property for Gitea.")
+                        continue
             try:
                 target_url = build['url']
                 res = yield self.createStatus(
