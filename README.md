@@ -3,7 +3,6 @@
 
 [![PyPI version](https://badge.fury.io/py/buildbot-gitea.svg)](https://badge.fury.io/py/buildbot-gitea)
 ![GitHub](https://img.shields.io/github/license/lab132/buildbot-gitea)
-[![Build Status](https://travis-ci.org/lab132/buildbot-gitea.svg?branch=master)](https://travis-ci.org/lab132/buildbot-gitea)
 
 This plugin for buildbot adds integration support with gitea, featuring push hooks, commit status updates and a change source.
 
