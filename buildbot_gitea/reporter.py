@@ -28,9 +28,11 @@ class GiteaStatusPush(http.ReporterBase):
     name = "GiteaStatusPush"
     ssh_url_match = re.compile(r"(ssh://)?[\w+\-\_]+@[\w\.\-\_]+:?(\d*/)?(?P<owner>[\w_\-\.]+)/(?P<repo_name>[\w_\-\.]+?)(\.git)?$")
 
-    def checkConfig(self, token, context=None, baseURL=None, verbose=False,
-                    debug=None, verify=None, generators=None,
-                    **kwargs):
+    def checkConfig(self, baseURL, token,
+                    context=None, context_pr=None, verbose=False,
+                    debug=None, verify=None,
+                    generators=None,
+                    warningAsSuccess=False, **kwargs):
 
         if generators is None:
             generators = self._create_default_generators()
