@@ -160,14 +160,16 @@ class GiteaStatusPush(http.ReporterBase):
 
         for sourcestamp in sourcestamps:
             sha = sourcestamp['revision']
+            if 'head_sha' in props:
+                sha = props['head_sha']
             repository_owner = None
             if sha is None:
                 # No special revision for this, so ignore it
                 continue
             # If this is a pull request, send the status to the head repository
             if 'pr_id' in props:
-                repository_name = props['head_reponame']
-                repository_owner = props['head_owner']
+                repository_name = props['repository_name']
+                repository_owner = props['owner']
             elif 'repository_name' in props:
                 repository_name = props['repository_name']
             else:
