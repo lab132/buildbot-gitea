@@ -100,11 +100,12 @@ class TestGiteaStatusPush(
         self.reporter_test_props["pr_id"] = 42
         self.reporter_test_props["head_owner"] = 'foo'
         self.reporter_test_props["head_reponame"] = 'bar'
+        self.reporter_test_props["head_sha"] = '52c7864e56d1425f4c0a76c1e692942047bdd849'
         build = yield self.setupBuildResults(SUCCESS)
         # we make sure proper calls to txrequests have been made
         self._http.expect(
             'post',
-            '/api/v1/repos/foo/bar/statuses/d34db33fd43db33f',
+            '/api/v1/repos/foo/bar/statuses/52c7864e56d1425f4c0a76c1e692942047bdd849',
             json={'state': 'success',
                   'target_url': 'http://localhost:8080/#builders/79/builds/0',
                   'description': 'Build done.', 'context': 'buildbot/pull_request/Builder0'})
