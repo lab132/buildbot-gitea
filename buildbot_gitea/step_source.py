@@ -17,7 +17,7 @@ class Gitea(Git):
     @defer.inlineCallbacks
     def _fetch(self, arg):
         res = yield super(Gitea, self)._fetch(arg)
-        if self.build.hasProperty("pr_id"):
+        if self.build.hasProperty("pr_id") and self.repourl == self.build.getProperty("base_git_ssh_url", None):
             remote = yield self._dovccmd(
                 ['config', 'remote.pr_source.url'], collectStdout=True, abandonOnFailure=False)
             if remote is None or remote.strip() is '':
