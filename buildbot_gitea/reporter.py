@@ -168,6 +168,7 @@ class GiteaStatusPush(http.ReporterBase):
             if 'pr_id' in props:
                 repository_name = props['head_reponame']
                 repository_owner = props['head_owner']
+                sha = props['head_sha']
             elif 'repository_name' in props:
                 repository_name = props['repository_name']
             else:
