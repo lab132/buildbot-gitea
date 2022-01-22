@@ -41,7 +41,7 @@ class GiteaHandler(BaseHookHandler):
         for commit in commits:
             files = []
             for kind in ('added', 'modified', 'removed'):
-                files.extend(commit.get(kind, []))
+                files.extend(commit.get(kind, []) or [])
             timestamp = dateparse(commit['timestamp'])
             change = {
                 'author': '{} <{}>'.format(commit['author']['name'],
@@ -134,6 +134,7 @@ class GiteaHandler(BaseHookHandler):
             payload = json.loads(content_text)
         except Exception as exception:
             raise ValueError('Error loading JSON: ' + str(exception))
+
 
         if secret is not None:
             p = Properties()

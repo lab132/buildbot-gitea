@@ -1171,6 +1171,112 @@ giteaJsonPullRequestFork = rb"""
 """
 
 
+giteaJsonPushEmptyFiles = rb"""
+{
+  "secret": "pass",
+  "ref": "refs/heads/develop",
+  "before": "2437bd7c6b0af7b8da570973c02f0cca07ec787d",
+  "after": "2437bd7c6b0af7b8da570973c02f0cca07ec787d",
+  "compare_url": "",
+  "commits": [
+    {
+      "id": "2437bd7c6b0af7b8da570973c02f0cca07ec787d",
+      "message": "snip",
+      "url": "snip/commit/2437bd7c6b0af7b8da570973c02f0cca07ec787d",
+      "author": {
+        "name": "snip",
+        "email": "snip",
+        "username": ""
+      },
+      "committer": {
+        "name": "snip",
+        "email": "snip",
+        "username": ""
+      },
+      "verification": null,
+      "timestamp": "0001-01-01T00:00:00Z",
+      "added": null,
+      "removed": null,
+      "modified": null
+    }
+  ],
+  "head_commit": {
+    "id": "2437bd7c6b0af7b8da570973c02f0cca07ec787d",
+    "message": "snip",
+    "url": "snip/commit/2437bd7c6b0af7b8da570973c02f0cca07ec787d",
+    "author": {
+      "name": "snip",
+      "email": "snip",
+      "username": ""
+    },
+    "committer": {
+      "name": "snip",
+      "email": "snip",
+      "username": ""
+    },
+    "verification": null,
+    "timestamp": "0001-01-01T00:00:00Z",
+    "added": null,
+    "removed": null,
+    "modified": null
+  },
+  "repository": {
+    "id": "snip",
+    "owner": {"id":"snip","login":"snip","full_name":"snip","email":"snip","avatar_url":"snip","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2019-07-04T02:15:26+02:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":0,"username":"snip"},
+    "name": "snip",
+    "full_name": "snip",
+    "description": "snip",
+    "empty": false,
+    "private": true,
+    "fork": false,
+    "template": false,
+    "parent": null,
+    "mirror": false,
+    "size": 19106,
+    "html_url": "snip",
+    "ssh_url": "git@snip.git",
+    "clone_url": "snip.git",
+    "original_url": "",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 5,
+    "open_issues_count": 33,
+    "open_pr_counter": 1,
+    "release_counter": 0,
+    "default_branch": "develop",
+    "archived": false,
+    "created_at": "2020-08-25T09:34:29+02:00",
+    "updated_at": "2022-01-19T15:55:11+01:00",
+    "permissions": {
+      "admin": false,
+      "push": false,
+      "pull": false
+    },
+    "has_issues": true,
+    "internal_tracker": {
+      "enable_time_tracker": false,
+      "allow_only_contributors_to_track_time": true,
+      "enable_issue_dependencies": true
+    },
+    "has_wiki": true,
+    "has_pull_requests": true,
+    "has_projects": false,
+    "ignore_whitespace_conflicts": false,
+    "allow_merge_commits": true,
+    "allow_rebase": true,
+    "allow_rebase_explicit": false,
+    "allow_squash_merge": true,
+    "default_merge_style": "merge",
+    "avatar_url": "",
+    "internal": false,
+    "mirror_interval": ""
+  },
+  "pusher": {"id":"snip","login":"snip","full_name":"snip","email":"snip","avatar_url":"snip","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2021-01-22T02:15:29+01:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":0,"username":"snip"},
+  "sender": {"id":"snip","login":"snip","full_name":"snip","email":"snip","avatar_url":"snip","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2021-01-22T02:15:29+01:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":0,"username":"snip"}
+}
+"""
+
 class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
     def setUp(self):
         self.setUpTestReactor()
@@ -1230,6 +1336,23 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
             "revlink"],
             "https://git.example.com/Test/test/commit/ea07c3148db428876add8b312256239275c395fb")
         self.assertEqual(change["files"], ["testfile2", "testfile1", "testfile3"])
+
+    def checkNoFileChanges(self, codebase=None):
+        self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
+        change = self.changeHook.master.data.updates.changesAdded[0]
+        self.assertEqual(change['repository'], 'git@snip.git')
+
+        self.assertEqual(
+            change["author"], "snip <snip>")
+        self.assertEqual(
+            change["revision"], '2437bd7c6b0af7b8da570973c02f0cca07ec787d')
+        self.assertEqual(
+            change["comments"], "snip")
+        self.assertEqual(change["branch"], "develop")
+        self.assertEqual(change[
+            "revlink"],
+            "snip/commit/2437bd7c6b0af7b8da570973c02f0cca07ec787d")
+        self.assertEqual(change["files"], [])
 
     def checkChangesFromPullRequest(self, codebase=None):
         self.assertEqual(len(self.changeHook.master.data.updates.changesAdded), 1)
@@ -1306,6 +1429,15 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
         self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
         res = yield self.request.test_render(self.changeHook)
         self.checkFileChanges(res)
+
+    @defer.inlineCallbacks
+    def testNoChangedFiles(self):
+        self.request = FakeRequest(content=giteaJsonPushEmptyFiles)
+        self.request.uri = b'/change_hook/gitea'
+        self.request.method = b'POST'
+        self.request.received_headers[_HEADER_EVENT_TYPE] = b"push"
+        res = yield self.request.test_render(self.changeHook)
+        self.checkNoFileChanges(res)
 
     @defer.inlineCallbacks
     def testPullRequestEvent(self):
