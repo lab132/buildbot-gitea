@@ -9,8 +9,8 @@ class GiteaAuth(OAuth2Auth):
     AUTH_URL = 'login/oauth/authorize'
     TOKEN_URL = 'login/oauth/access_token'
 
-    def __init__(self, endpoint, client_id, client_secret):
-        super(GiteaAuth, self).__init__(client_id, client_secret)
+    def __init__(self, endpoint, client_id, client_secret, **kwargs):
+        super(GiteaAuth, self).__init__(client_id, client_secret, **kwargs)
         self.resourceEndpoint = endpoint
         self.authUri = urljoin(endpoint, self.AUTH_URL)
         self.tokenUri = urljoin(endpoint, self.TOKEN_URL)
