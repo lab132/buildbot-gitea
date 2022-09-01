@@ -15,8 +15,8 @@ class Gitea(Git):
     the Gitea webhook
     """
     @defer.inlineCallbacks
-    def _fetch(self, arg):
-        res = yield super(Gitea, self)._fetch(arg)
+    def _fetch(self, *args, **kwargs):
+        res = yield super(Gitea, self)._fetch(*args, **kwargs)
         if self.build.hasProperty("pr_id"):
             remote = yield self._dovccmd(
                 ['config', 'remote.pr_source.url'], collectStdout=True, abandonOnFailure=False)
