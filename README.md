@@ -88,11 +88,12 @@ Note that the handlers need to be named according to the scheme:
 
 The change hook is set as part of the `www` section in the `change_hook_dialects` named `gitea`.
 
-| Parameter | Description |
-| --- | --- |
-| `secret` | The secret, which needs to be set in gitea |
-| `onlyIncludePushCommit` | A push may have more than one commit associated with it. If this is true, only the newest (latest) commit of all received will be added as a change to buildbot. If this is set to false, all commits will inside the push will be added. |
-| `class` | Set this if you want to use your own handler class (see above for details) |
+| Parameter                  | Description                                                                                                                                                                                                                               |
+|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `secret`                   | The secret, which needs to be set in gitea                                                                                                                                                                                                |
+| `onlyIncludePushCommit`    | A push may have more than one commit associated with it. If this is true, only the newest (latest) commit of all received will be added as a change to buildbot. If this is set to false, all commits will inside the push will be added. |
+| `onlyMergeablePullRequest` | Ignore pull request if not mergeable. If this is true, only mergeable pull requests will be processed.                                                                                                                                    |
+| `class`                    | Set this if you want to use your own handler class (see above for details)                                                                                                                                                                |
 
 In gitea in your project or organization and add a new webhook of type gitea.
 Set the parameters as follows:
