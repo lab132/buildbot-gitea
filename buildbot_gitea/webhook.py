@@ -75,7 +75,7 @@ class GiteaHandler(BaseHookHandler):
             log.msg("Gitea Pull Request event '{}' ignored".format(action))
             return []
         pull_request = payload['pull_request']
-        if not pull_request['mergeable']:
+        if not pull_request['mergeable'] and self.options.get('ignoreMergeablePullRequest', True):
             log.msg("Gitea Pull Request ignored because it is not mergeable.")
             return []
         if pull_request['merged']:
