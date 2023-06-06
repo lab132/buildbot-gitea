@@ -20,7 +20,7 @@ class Gitea(Git):
         if self.build.hasProperty("pr_id"):
             remote = yield self._dovccmd(
                 ['config', 'remote.pr_source.url'], collectStdout=True, abandonOnFailure=False)
-            if remote is None or remote.strip() is '':
+            if remote is None or remote.strip() == '':
                 yield self._dovccmd(
                     ['remote', 'add', 'pr_source',
                      self.build.getProperty("head_git_ssh_url", None)])
