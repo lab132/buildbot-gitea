@@ -35,6 +35,11 @@ class GiteaHandler(BaseHookHandler):
         project = repository['full_name']
 
         commits = payload['commits']
+
+        # In case it is a tag it will only contain a head_commit
+        if len(commits) == 0 and re.match(r"^refs/tags/.*$", refname):
+            commits = [payload['head_commit']]
+
         if isinstance(self.options, dict) and self.options.get('onlyIncludePushCommit', False):
             commits = commits[:1]
 
