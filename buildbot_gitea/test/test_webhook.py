@@ -1,7 +1,7 @@
 import buildbot.www.change_hook as change_hook
 from buildbot.test.fake.web import FakeRequest
 from buildbot.test.fake.web import fakeMasterForHooks
-from buildbot.test.util.misc import TestReactorMixin
+from buildbot.test.reactor import TestReactorMixin
 from buildbot.secrets.manager import SecretManager
 from buildbot.test.fake.secrets import FakeSecretStorage
 from buildbot.process.properties import Secret
@@ -1279,7 +1279,7 @@ giteaJsonPushEmptyFiles = rb"""
 
 class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {}},
             master=fakeMasterForHooks(self))
@@ -1481,7 +1481,7 @@ class TestChangeHookGiteaPush(unittest.TestCase, TestReactorMixin):
 
 class TestChangeHookGiteaPushOnlySingle(unittest.TestCase, TestReactorMixin):
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {"onlyIncludePushCommit": True}},
             master=fakeMasterForHooks(self))
@@ -1518,7 +1518,7 @@ class TestChangeHookGiteaPushOnlySingle(unittest.TestCase, TestReactorMixin):
 
 class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {"secret": "test"}},
             master=fakeMasterForHooks(self))
@@ -1546,7 +1546,7 @@ class TestChangeHookGiteaSecretPhrase(unittest.TestCase, TestReactorMixin):
 
 class TestChangeHookGiteaSecretPhraseProvider(unittest.TestCase, TestReactorMixin):
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         self.master = fakeMasterForHooks(self)
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {"secret": Secret("token")}},
@@ -1590,7 +1590,7 @@ class TestChangeHookGiteaClass(unittest.TestCase, TestReactorMixin):
             return [{'category': self.fakeCategory}]
 
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         self.changeHook = change_hook.ChangeHookResource(
             dialects={'gitea': {'class': self.GiteaTestHandler}},
             master=fakeMasterForHooks(self))

@@ -20,11 +20,12 @@ from twisted.trial import unittest
 
 from buildbot.process.results import SUCCESS
 from buildbot_gitea.step_source import Gitea
-from buildbot.test.fake.remotecommand import Expect
-from buildbot.test.fake.remotecommand import ExpectShell
+from buildbot.test.steps import Expect
+from buildbot.test.steps import ExpectShell
+from buildbot.test.steps import ExpectListdir
 from buildbot.test.util import config
 from buildbot.test.util import sourcesteps
-from buildbot.test.util.misc import TestReactorMixin
+from buildbot.test.reactor import TestReactorMixin
 
 
 
@@ -32,12 +33,12 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
     stepClass = Gitea
 
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         self.sourceName = self.stepClass.__name__
         return self.setUpSourceStep()
 
     def setupStep(self, step, **kwargs):
-        step = sourcesteps.SourceStepMixin.setupStep(self, step, **kwargs)
+        step = sourcesteps.SourceStepMixin.setup_step(self, step, **kwargs)
         step.build.properties.setProperty("pr_id", "1", "gitea pr id")
         step.build.properties.setProperty("base_sha", "f6ad368298bd941e934a41f3babc827b2aa95a1d", "gitea source branch")
         step.build.properties.setProperty("base_branch", "master", "gitea source branch")
@@ -59,49 +60,41 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
             Gitea(repourl='git@gitea.example.com:base/awesome_project.git',
                            mode='full', method='clean'))
 
-        self.expectCommands(
+        self.expect_commands(
             ExpectShell(workdir='wkdir',
                         command=['git', '--version'])
-            + ExpectShell.log('stdio',
-                              stdout='git version 1.7.5')
-            + 0,
+            .stdout('git version 1.7.5').exit(0),
             Expect('stat', dict(file='wkdir/.buildbot-patched',
-                                logEnviron=True))
-            + 1,
-            Expect('listdir', {'dir': 'wkdir', 'logEnviron': True,
-                               'timeout': 1200})
-            + Expect.update('files', ['.git'])
-            + 0,
+                                logEnviron=True)).exit(1),
+            #+ Expect.update('files', ['.git'])
+            ExpectListdir('wkdir').exit(0),
             ExpectShell(workdir='wkdir',
-                        command=['git', 'clean', '-f', '-f', '-d'])
-            + 0,
+                        command=['git', 'clean', '-f', '-f', '-d']).exit(0),
             # here we always ignore revision, and fetch the merge branch
             ExpectShell(workdir='wkdir',
                         command=['git', 'fetch', '-f', '-t',
                                  'git@gitea.example.com:base/awesome_project.git', 'HEAD', '--progress'])
-            + 0,
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'reset', '--hard', 'FETCH_HEAD', '--'])
-            + 0,
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'config', 'remote.pr_source.url'])
-            + 0,
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'remote', 'add', 'pr_source', 'git@gitea.example.com:target/awesome_project.git'])
-            + 0,
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'fetch', 'pr_source'])
-            + 0,
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'merge', 'e4cd1224c622d46a8199c85c858485723115d2c8'])
-            + 0,
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'rev-parse', 'HEAD'])
-            + ExpectShell.log('stdio',
-                              stdout='e4cd1224c622d46a8199c85c858485723115d2c8')
-            + 0,
+            .stdout('e4cd1224c622d46a8199c85c858485723115d2c8').exit(0)
         )
-        self.expectOutcome(result=SUCCESS)
-        self.expectProperty(
+        self.expect_outcome(result=SUCCESS)
+        self.expect_property(
             'got_revision', 'e4cd1224c622d46a8199c85c858485723115d2c8', 'Gitea')
-        return self.runStep()
+        return self.run_step()

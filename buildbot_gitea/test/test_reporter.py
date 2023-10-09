@@ -17,7 +17,7 @@ from buildbot.test.fake import fakemaster
 from buildbot.test.fake import httpclientservice as fakehttpclientservice
 from buildbot.test.util import logging
 from buildbot.test.util.reporter import ReporterTestMixin
-from buildbot.test.util.misc import TestReactorMixin
+from buildbot.test.reactor import TestReactorMixin
 
 
 
@@ -29,15 +29,13 @@ class TestGiteaStatusPush(
 
     @defer.inlineCallbacks
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
 
         self.setup_reporter_test()
 
-    # repository must be in the form http://gitea/<owner>/<project>
+        # repository must be in the form http://gitea/<owner>/<project>
         self.reporter_test_repo = u'http://gitea/buildbot/buildbot'
 
-        # ignore config error if txrequests is not installed
-        self.patch(config, '_errors', Mock())
         self.master = fakemaster.make_master(testcase=self,
                                              wantData=True, wantDb=True, wantMq=True)
 
@@ -59,7 +57,7 @@ class TestGiteaStatusPush(
 
     @defer.inlineCallbacks
     def setupBuildResults(self, buildResults):
-        self.insertTestData([buildResults], buildResults)
+        self.insert_test_data([buildResults], buildResults)
         build = yield self.master.data.get(("builds", 20))
         defer.returnValue(build)
 
@@ -72,20 +70,23 @@ class TestGiteaStatusPush(
             'post',
             '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
             json={'state': 'pending',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build started.', 'context': 'buildbot/Builder0'})
+                  'description': 'Build started.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/Builder0'})
         self._http.expect(
             'post',
             '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
             json={'state': 'success',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build done.', 'context': 'buildbot/Builder0'})
+                  'description': 'Build done.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/Builder0'})
         self._http.expect(
             'post',
             '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
             json={'state': 'failure',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build done.', 'context': 'buildbot/Builder0'})
+                  'description': 'Build done.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/Builder0'})
 
         build['complete'] = False
         self.sp._got_event(('builds', 20, 'new'), build)
@@ -107,12 +108,13 @@ class TestGiteaStatusPush(
             'post',
             '/api/v1/repos/foo/bar/statuses/52c7864e56d1425f4c0a76c1e692942047bdd849',
             json={'state': 'success',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build done.', 'context': 'buildbot/pull_request/Builder0'})
+                  'description': 'Build done.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/pull_request/Builder0'})
 
         build['complete'] = True
         self.sp._got_event(('builds', 20, 'finished'), build)
-        
+
     @defer.inlineCallbacks
     def test_sshurl(self):
         self.setupProps()
@@ -123,8 +125,9 @@ class TestGiteaStatusPush(
             'post',
             '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
             json={'state': 'pending',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build started.', 'context': 'buildbot/Builder0'})
+                  'description': 'Build started.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/Builder0'})
         build['complete'] = False
         self.sp._got_event(('builds', 20, 'new'), build)
 
@@ -137,8 +140,9 @@ class TestGiteaStatusPush(
             'post',
             '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
             json={'state': 'pending',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build started.', 'context': 'buildbot/Builder0'})
+                  'description': 'Build started.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/Builder0'})
         build['complete'] = False
         self.sp._got_event(('builds', 20, 'new'), build)
 
@@ -178,8 +182,9 @@ class TestGiteaStatusPush(
             'post',
             '/api/v1/repos/buildbot/buildbot/statuses/d34db33fd43db33f',
             json={'state': 'pending',
-                  'target_url': 'http://localhost:8080/#builders/79/builds/0',
-                  'description': 'Build started.', 'context': 'buildbot/Builder0'},
+                  'description': 'Build started.',
+                  'target_url': 'http://localhost:8080/#/builders/79/builds/0',
+                  'context': 'buildbot/Builder0'},
             content_json={
                 "message": "sha1 not found: d34db33fd43db33f",
                 "url": "https://godoc.org/github.com/go-gitea/go-sdk/gitea"
@@ -204,7 +209,7 @@ class TestGiteaStatusPush(
             json={
                 'state': 'pending',
                 'description': 'Build started.',
-                'target_url': 'http://localhost:8080/#builders/79/builds/0',
+                'target_url': 'http://localhost:8080/#/builders/79/builds/0',
                 'context': 'buildbot/Builder0'
             },
             content_json={"message": "Not found"},

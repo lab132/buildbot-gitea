@@ -2,7 +2,7 @@ import json
 import mock
 from buildbot.process.properties import Secret
 from buildbot.test.util.config import ConfigErrorsMixin
-from buildbot.test.util.misc import TestReactorMixin
+from buildbot.test.reactor import TestReactorMixin
 from buildbot.test.util import www
 from twisted.internet import defer
 from twisted.trial import unittest
@@ -30,7 +30,7 @@ class FakeResponse:
 class TestGiteaAuth(TestReactorMixin, www.WwwTestMixin, ConfigErrorsMixin,
                     unittest.TestCase):
     def setUp(self):
-        self.setUpTestReactor()
+        self.setup_test_reactor()
         if requests is None:
             raise unittest.SkipTest("Need to install requests to test oauth2")
 
