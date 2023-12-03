@@ -217,6 +217,6 @@ class TestGiteaStatusPush(
         )
         build['complete'] = False
         yield self.sp._got_event(("builds", 20, "new"), build)
-        self.assertLogged("Could not send status \"pending\" for"
-                          " http://gitea/buildbot/buildbot at d34db33fd43db33f")
+        self.assertLogged('Could not send status "pending" for '
+                          'http://gitea/buildbot/buildbot at d34db33fd43db33f: 404 : Not found')
         self.flushLoggedErrors(AssertionError)

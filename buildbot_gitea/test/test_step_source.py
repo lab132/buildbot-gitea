@@ -67,7 +67,9 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
             Expect('stat', dict(file='wkdir/.buildbot-patched',
                                 logEnviron=True)).exit(1),
             #+ Expect.update('files', ['.git'])
-            ExpectListdir('wkdir').exit(0),
+            ExpectListdir(dir='wkdir')
+            .files(['.git'])
+            .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'clean', '-f', '-f', '-d']).exit(0),
             # here we always ignore revision, and fetch the merge branch
@@ -76,7 +78,7 @@ class TestGitea(sourcesteps.SourceStepMixin, config.ConfigErrorsMixin, unittest.
                                  'git@gitea.example.com:base/awesome_project.git', 'HEAD', '--progress'])
             .exit(0),
             ExpectShell(workdir='wkdir',
-                        command=['git', 'reset', '--hard', 'FETCH_HEAD', '--'])
+                        command=['git', 'checkout', '-f', 'FETCH_HEAD'])
             .exit(0),
             ExpectShell(workdir='wkdir',
                         command=['git', 'config', 'remote.pr_source.url'])
