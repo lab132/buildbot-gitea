@@ -17,3 +17,21 @@ class GiteaAuth(OAuth2Auth):
 
     def getUserInfoFromOAuthClient(self, c):
         return self.get(c, '/api/v1/user')
+
+
+class GiteaAuthWithPermissions(GiteaAuth):
+    def getUserInfoFromOAuthClient(self, c):
+        user_info = super(GiteaAuthWithPermissions, self).getUserInfoFromOAuthClient(c)
+
+        teams_info = self.get(c, '/api/v1/user/teams')
+
+        user_organizations = user_info.setdefault("organizations", {})
+        for team in teams_info:
+            org = team.get("organization")
+            if org is None:
+                continue
+            user_organizations.setdefault(
+                org["name"], {}
+            )[team["name"]] = team["permission"]
+
+        return user_info
