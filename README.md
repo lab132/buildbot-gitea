@@ -152,3 +152,35 @@ Resources:
 
 + [Gitea OAuth2 Provider documentation](https://docs.gitea.io/en-us/oauth2-provider/)
 + [Buildbot OAuth2 documentation](https://docs.buildbot.net/current/developer/cls-auth.html?highlight=oauth2#buildbot.www.oauth2.OAuth2Auth)
+
+## Authorization
+
+You can handle authorization based on user permissions in Gitea organizations.
+
+`master.cfg`
+
+```py
+from buildbot.plugins import util
+c['www']['auth'] = util.GiteaAuthWithPermissions(
+    endpoint="https://your-gitea-host",
+    client_id='oauth2-client-id',
+    client_secret='oauth2-client-secret')
+
+c['www']['authz'] = util.Authz(
+        stringsMatcher=util.fnmatchStrMatcher,
+        allowRules=[
+            util.endpointmatchers.AnyControlEndpointMatcher(role="admins"),
+            util.endpointmatchers.StopBuildEndpointMatcher(role="admins"),
+            util.endpointmatchers.EnableSchedulerEndpointMatcher(role="admins"),
+            util.endpointmatchers.ForceBuildEndpointMatcher(role="admins"),
+            util.endpointmatchers.RebuildBuildEndpointMatcher(role="admins"),
+        ],
+        roleMatchers=[
+            util.RolesFromGitea(roles=["admins"], orgs=['org1'], teams=["Owners"], permissions=["owner"])
+        ]
+    )
+```
+
+Resources:
+
++ [Buildbot Authorization documentation](https://docs.buildbot.net/current/manual/configuration/www.html#authorization-rules)
